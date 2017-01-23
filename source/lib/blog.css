@@ -1,0 +1,40 @@
+
+body {
+	margin-top: 75px;
+}
+
+
+footer {
+	margin: 10px 0;
+}
+
+#comments, #comments li {
+    margin: 0;
+    padding: 0;
+}
+
+#comments li {
+    list-style: none;
+}
+        
+.photo {
+	margin-bottom: 10px;
+}
+
+.social-buttons button {
+	margin-top: 5px;
+}
+
+a.logo-link {
+	display: inline-block;
+    margin-right: 10px;
+    margin-top: 2px;
+}
+
+
+/* Media Queries */
+@media (min-width: 768px) {
+	.group2 {
+		text-align: right;
+	}
+}

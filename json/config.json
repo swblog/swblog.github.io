@@ -1,0 +1,7 @@
+{
+  "author": "liquidliang",
+  "nav": [
+    ["Home", "#!/index"],
+    ["About", "#!/about"]
+  ]
+}
