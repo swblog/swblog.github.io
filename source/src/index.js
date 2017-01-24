@@ -2,8 +2,10 @@
  * @file index 入口文件，路由定义
  * @author ljquan@qq.com
  */
+
 require('css/blog.css');
 require('helper/common_event.js');
+require('helper/service_worker.js');
 const m_article = require('model/article');
 const m_config = require('model/config');
 const c_header = require('card/common/navigator');
@@ -45,7 +47,7 @@ BCD.ajaxCache('./json/article.json', function(data) {
           c_pageContent(page, path);
           return next();
         }
-        
+
         BCD.replaceHash('#!/index');
         next(-1);
       }

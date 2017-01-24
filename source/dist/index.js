@@ -50,13 +50,15 @@
 	 * @file index 入口文件，路由定义
 	 * @author ljquan@qq.com
 	 */
+	
 	__webpack_require__(1);
 	__webpack_require__(5);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(9);
-	var c_header = __webpack_require__(10);
-	var c_pageList = __webpack_require__(11);
-	var c_pageContent = __webpack_require__(17);
+	__webpack_require__(8);
+	var m_article = __webpack_require__(9);
+	var m_config = __webpack_require__(10);
+	var c_header = __webpack_require__(11);
+	var c_pageList = __webpack_require__(12);
+	var c_pageContent = __webpack_require__(18);
 	var viewHeader = c_header({
 	  check: function check(obj) {
 	    if (!!obj.author) {
@@ -559,6 +561,36 @@
 
 /***/ },
 /* 8 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	if ('serviceWorker' in navigator) {
+	    // 注册Service Worker scope表示作用的页面的path
+	    // register函数返回Promise
+	    navigator.serviceWorker.oncontrollerchange = function () {
+	        this.controller.onstatechange = function () {
+	            if (this.state === 'activated') {
+	                //todo
+	            }
+	            console.log('ServiceWorker state:' + this.state);
+	        };
+	        // We only care about this once.
+	        //navigator.serviceWorker.removeEventListener('controllerchange', changeListener);
+	    };
+	    navigator.serviceWorker.register('/sw.js', { scope: './' }).then(function (registration) {
+	        // Registration was successful
+	        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+	    }).catch(function (err) {
+	        // registration failed :(
+	        console.log('ServiceWorker registration failed: ', err);
+	    });
+	} else {
+	    console.log('ServiceWorker is not supported in this browser.');
+	}
+
+/***/ },
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -784,7 +816,7 @@
 	};
 
 /***/ },
-/* 9 */
+/* 10 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -804,7 +836,7 @@
 	};
 
 /***/ },
-/* 10 */
+/* 11 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -822,17 +854,17 @@
 	};
 
 /***/ },
-/* 11 */
+/* 12 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var c_footer = __webpack_require__(12);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(9);
-	var m_initOption = __webpack_require__(13);
-	var c_pannelList = __webpack_require__(14);
-	var c_articleList = __webpack_require__(16);
+	var c_footer = __webpack_require__(13);
+	var m_article = __webpack_require__(9);
+	var m_config = __webpack_require__(10);
+	var m_initOption = __webpack_require__(14);
+	var c_pannelList = __webpack_require__(15);
+	var c_articleList = __webpack_require__(17);
 	
 	module.exports = function (page, key) {
 	  var viewBody = $('<div class="container">' + '  <div class="row">' + '    <div class="col-md-8" data-selector="main"></div>' + '    <div class="col-md-4" data-selector="panel"></div>' + '  </div>' + '</div>');
@@ -882,7 +914,7 @@
 	};
 
 /***/ },
-/* 12 */
+/* 13 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -898,7 +930,7 @@
 	};
 
 /***/ },
-/* 13 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -929,13 +961,13 @@
 	};
 
 /***/ },
-/* 14 */
+/* 15 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var m_article = __webpack_require__(8);
-	var c_pannel = __webpack_require__(15);
+	var m_article = __webpack_require__(9);
+	var c_pannel = __webpack_require__(16);
 	module.exports = function (view) {
 	  var viewPannelLastPost = c_pannel({
 	    data: {
@@ -976,7 +1008,7 @@
 	};
 
 /***/ },
-/* 15 */
+/* 16 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -992,7 +1024,7 @@
 	};
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1006,17 +1038,17 @@
 	};
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var c_footer = __webpack_require__(12);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(9);
-	var c_pannelList = __webpack_require__(14);
-	var c_content = __webpack_require__(18);
-	var m_initOption = __webpack_require__(13);
+	var c_footer = __webpack_require__(13);
+	var m_article = __webpack_require__(9);
+	var m_config = __webpack_require__(10);
+	var c_pannelList = __webpack_require__(15);
+	var c_content = __webpack_require__(19);
+	var m_initOption = __webpack_require__(14);
 	
 	module.exports = function (page, key) {
 	  var viewBody = $('<div class="container">' + '  <div class="row">' + '    <div class="col-md-8" data-selector="main"></div>' + '    <div class="col-md-4" data-selector="panel"></div>' + '  </div>' + '</div>');
@@ -1048,7 +1080,7 @@
 	};
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	'use strict';
