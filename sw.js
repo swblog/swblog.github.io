@@ -1,4 +1,4 @@
-var version = 'v2';
+var version = 'v3';
 var namePrefix = 'swblog-';
 var nameReg = new RegExp('^'+namePrefix);
 var businessCacheName = namePrefix + 'business-' + version;
@@ -112,7 +112,18 @@ self.addEventListener('fetch', function(event) {
     }
   }
 
-  return event.respondWith(fetch(event.request.clone()));
+
+  return caches.open(businessCacheName).then(function(cache) {
+      return cache.match(req.clone());
+  }).then(function(response) {
+    if (response) {
+      addToCache(businessCacheName, req);
+      return response; //先用旧版，下次访问再用新版
+    } else {
+      return event.respondWith(fetch(event.request.clone()));
+    }
+  });
+
 });
 
 
