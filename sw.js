@@ -1,4 +1,4 @@
-var version = 'v3';
+var version = 'v6';
 var namePrefix = 'swblog-';
 var nameReg = new RegExp('^'+namePrefix);
 var businessCacheName = namePrefix + 'business-' + version;
@@ -65,8 +65,18 @@ var addToCache = function(dbName, req, response) {
       cache.put(req.clone(), cacheResp);
     });
     return resp;
-  }).catch(function(){
-    return response;
+  }).catch(function(error){
+    return caches.open(dbName).then(function(cache) {
+        return cache.match(req.clone());
+    }).then(function(response) {
+      if (response) {//如果命中缓存，直接使用缓存
+        return response;
+      } else {
+        // Respond with a 400 "Bad Request" status.
+        console.log(`fetch failed: ${ req.url }`, error);
+        return new Response(new Blob, { 'status': 400, 'statusText': 'Bad Request' });
+      }
+    });
   });
 };
 
@@ -91,19 +101,23 @@ var fetchCache = function(key, req){
 self.addEventListener('fetch', function(event) {
 
   var req, url = event.request.url;
-  //var requestURL = new URL(event.request.url);
+  var requestURL = new URL(url);
 
   // if (url.indexOf('http:') === 0) {
   //   return event.respondWith(fetch(event.request.clone()));
   // }
 
 
-  if (url.indexOf('cors=1') !== -1) {
+  if (requestURL.search.indexOf('cors=1') !== -1) {
     req = new Request(url, {
       mode: 'cors'
     });
   } else {
     req = event.request.clone();
+  }
+
+  if(FILES.indexOf(requestURL.pathname)>-1){
+    return event.respondWith(fetchCache(businessCacheName.replace(namePrefix, ''), req));
   }
 
   for(var key in regDict){
@@ -112,20 +126,9 @@ self.addEventListener('fetch', function(event) {
     }
   }
 
-
-  return caches.open(businessCacheName).then(function(cache) {
-      return cache.match(req.clone());
-  }).then(function(response) {
-    if (response) {
-      addToCache(businessCacheName, req);
-      return response; //先用旧版，下次访问再用新版
-    } else {
-      return event.respondWith(fetch(event.request.clone()));
-    }
-  });
+  return event.respondWith(fetch(req));
 
 });
-
 
 (function() {
   var nativeAddAll = Cache.prototype.addAll;
