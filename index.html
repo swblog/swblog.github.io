@@ -11,11 +11,24 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title></title>
 
+	<script>
+		window.global_isDebug=1;
+		if( 'serviceWorker' in navigator ){
+		    navigator.serviceWorker.register('/sw.js', {scope: './'}).then(function(registration) {
+		        // Registration was successful
+		        console.log('[client] ServiceWorker registration successful with scope: ', registration.scope);
+		    }).catch(function(err) {
+		        // registration failed :(
+		        console.log('[client] ServiceWorker registration failed: ', err);
+		    });
+		} else {
+		    console.log('[client] ServiceWorker is not supported in this browser.')
+		}
+	</script>
 	<link href="./source/lib/bootstrap-custom/css/custom.bootstrap.css" rel="stylesheet">
 	<link href="./source/lib/blog.css" rel="stylesheet">
 	<script src="./source/lib/jquery.min.js"></script>
 	<script src="./source/lib/bootstrap-custom/js/bootstrap.min.js"></script>
-	<script>window.global_isDebug=1;</script>
 	<script src="./source/lib/bcd.min.js"></script>
 	<link rel="shortcut icon" href="/favicon.ico" />
 

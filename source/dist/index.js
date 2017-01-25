@@ -53,8 +53,7 @@
 	
 	__webpack_require__(1);
 	__webpack_require__(5);
-	__webpack_require__(8);
-	var m_article = __webpack_require__(9);
+	var m_article = __webpack_require__(8);
 	var m_config = __webpack_require__(10);
 	var c_header = __webpack_require__(11);
 	var c_pageList = __webpack_require__(12);
@@ -561,36 +560,6 @@
 
 /***/ },
 /* 8 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	if ('serviceWorker' in navigator) {
-	    // 注册Service Worker scope表示作用的页面的path
-	    // register函数返回Promise
-	    navigator.serviceWorker.oncontrollerchange = function () {
-	        this.controller.onstatechange = function () {
-	            if (this.state === 'activated') {
-	                //todo
-	            }
-	            console.log('ServiceWorker state:' + this.state);
-	        };
-	        // We only care about this once.
-	        //navigator.serviceWorker.removeEventListener('controllerchange', changeListener);
-	    };
-	    navigator.serviceWorker.register('/sw.js', { scope: './' }).then(function (registration) {
-	        // Registration was successful
-	        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-	    }).catch(function (err) {
-	        // registration failed :(
-	        console.log('ServiceWorker registration failed: ', err);
-	    });
-	} else {
-	    console.log('ServiceWorker is not supported in this browser.');
-	}
-
-/***/ },
-/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -598,6 +567,7 @@
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
 	var m_util = __webpack_require__(6);
+	var swPostMessage = __webpack_require__(9);
 	var pathList = []; //路径列表
 	var catalogList = []; //目录列表
 	var articleList = []; //文件列表
@@ -638,6 +608,14 @@
 	  return arr ? arr[1] : '';
 	};
 	
+	var getURL = function getURL(o) {
+	  return o.path + '?mtime=' + o.mtime;
+	};
+	
+	var getPath = function getPath(pathWithSearch) {
+	  return pathWithSearch.replace(/\?[^?]+/, '');
+	};
+	
 	var getSortContent = function getSortContent(content) {
 	  var ret = content.substring(0, 500);
 	  var getContent = function getContent(str, reg) {
@@ -666,6 +644,17 @@
 	    return con;
 	  }
 	  return content.length > 300 ? ret + '...' : content;
+	};
+	
+	var preload = function preload(obj) {
+	  for (var pathWithSearch in obj) {
+	    var path = getPath(pathWithSearch);
+	    if (articleDict[path]) {
+	      articleDict[path].content = obj[pathWithSearch];
+	      articleDict[path].summary = getSortContent(obj[pathWithSearch]);
+	    }
+	  }
+	  console.log('articleDict', articleDict);
 	};
 	
 	var init = function init(list) {
@@ -714,6 +703,10 @@
 	    return b.mtime - a.mtime;
 	  });
 	  tagList = [].concat(_toConsumableArray(tagSet));
+	  swPostMessage({
+	    m: 'preload',
+	    list: articleList.map(getURL)
+	  }, preload);
 	};
 	
 	var getTagArticles = function getTagArticles(tag) {
@@ -730,7 +723,7 @@
 	    return articleDict[o.path] && !articleDict[o.path].content;
 	  }).map(function (o) {
 	    return $.ajax({
-	      url: o.path,
+	      url: getURL(o),
 	      success: function success(str) {
 	        var item = Object.assign({}, o);
 	        item.content = str;
@@ -782,10 +775,6 @@
 	  return [];
 	};
 	
-	var getLastPost = function getLastPost() {
-	  getTagArticles(tag).slice(start, start + count);
-	};
-	
 	module.exports = {
 	  init: init,
 	  catalogDict: catalogDict,
@@ -814,6 +803,44 @@
 	    });
 	  }
 	};
+
+/***/ },
+/* 9 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var m_util = __webpack_require__(6);
+	
+	var index = 0;
+	var postMessage = function postMessage() {};
+	var callbackDict = {};
+	
+	if (navigator.serviceWorker) {
+	  navigator.serviceWorker.addEventListener('message', function (event) {
+	    var _event$data = event.data,
+	        cbid = _event$data.cbid,
+	        resp = _event$data.resp;
+	
+	    if (cbid && callbackDict[cbid]) {
+	      callbackDict[cbid](resp);
+	      delete callbackDict[cbid];
+	    }
+	  }); //页面通过监听service worker的message事件接收service worker的信息
+	  postMessage = function postMessage(req, callback) {
+	    if (navigator.serviceWorker.controller && navigator.serviceWorker.controller.state == 'activated') {
+	      index++;
+	      var obj = { req: req };
+	      if (callback) {
+	        obj.cbid = m_util.getRandomName() + index;
+	        callbackDict[obj.cbid] = callback;
+	      }
+	      navigator.serviceWorker.controller.postMessage(obj); //页面向service worker发送信息
+	    }
+	  };
+	}
+	
+	module.exports = postMessage; //postMessage(message, callback)
 
 /***/ },
 /* 10 */
@@ -860,7 +887,7 @@
 	'use strict';
 	
 	var c_footer = __webpack_require__(13);
-	var m_article = __webpack_require__(9);
+	var m_article = __webpack_require__(8);
 	var m_config = __webpack_require__(10);
 	var m_initOption = __webpack_require__(14);
 	var c_pannelList = __webpack_require__(15);
@@ -966,7 +993,7 @@
 
 	'use strict';
 	
-	var m_article = __webpack_require__(9);
+	var m_article = __webpack_require__(8);
 	var c_pannel = __webpack_require__(16);
 	module.exports = function (view) {
 	  var viewPannelLastPost = c_pannel({
@@ -1044,7 +1071,7 @@
 	'use strict';
 	
 	var c_footer = __webpack_require__(13);
-	var m_article = __webpack_require__(9);
+	var m_article = __webpack_require__(8);
 	var m_config = __webpack_require__(10);
 	var c_pannelList = __webpack_require__(15);
 	var c_content = __webpack_require__(19);

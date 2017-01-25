@@ -5,7 +5,6 @@
 
 require('css/blog.css');
 require('helper/common_event.js');
-require('helper/service_worker.js');
 const m_article = require('model/article');
 const m_config = require('model/config');
 const c_header = require('card/common/navigator');

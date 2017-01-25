@@ -1,4 +1,5 @@
 const m_util = require('common/util/index');
+const swPostMessage = require('helper/sw_post_message.js');
 let pathList = []; //路径列表
 let catalogList = []; //目录列表
 let articleList = []; //文件列表
@@ -40,6 +41,10 @@ const getName = (path) => {
   return arr ? arr[1] : '';
 }
 
+const getURL = (o) => o.path + '?mtime=' + o.mtime;
+
+const getPath = (pathWithSearch) => pathWithSearch.replace(/\?[^?]+/,'');
+
 
 const getSortContent = (content) => {
   let ret = content.substring(0, 500);
@@ -68,6 +73,17 @@ const getSortContent = (content) => {
   }
   return content.length > 300 ? ret + '...' : content;
 }
+
+const preload = (obj)=>{
+  for(var pathWithSearch in obj){
+    var path = getPath(pathWithSearch);
+    if(articleDict[path]){
+      articleDict[path].content = obj[pathWithSearch];
+      articleDict[path].summary = getSortContent(obj[pathWithSearch]);
+    }
+  }
+  console.log('articleDict', articleDict);
+};
 
 const init = (list) => {
   originList = list;
@@ -110,6 +126,10 @@ const init = (list) => {
     return b.mtime - a.mtime;
   });
   tagList = [...tagSet];
+  swPostMessage({
+    m: 'preload',
+    list: articleList.map(getURL)
+  }, preload);
 };
 
 
@@ -123,7 +143,7 @@ const getTagArticles = (tag) => {
 
 const fetchContent = (list)=>{
   let ajaxList = list.filter(o => articleDict[o.path] && !articleDict[o.path].content).map(o => $.ajax({
-    url: o.path,
+    url: getURL(o),
     success(str) {
       let item = Object.assign({}, o);
       item.content = str;
@@ -163,10 +183,6 @@ const getCatalogArticles = (path) => {
       o.tagList.every((tag, i)=>tag==tagList[i]));
   }
   return [];
-};
-
-const getLastPost = () => {
-  getTagArticles(tag).slice(start, start + count);
 };
 
 module.exports = {
