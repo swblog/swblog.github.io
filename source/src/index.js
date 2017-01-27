@@ -10,6 +10,7 @@ const m_config = require('model/config');
 const c_header = require('card/common/navigator');
 const c_pageList = require('page/list.js');
 const c_pageContent = require('page/content.js');
+const c_pageSearch = require('page/search.js');
 let viewHeader = c_header({
   check: function(obj) {
     if(!!obj.author){
@@ -36,6 +37,9 @@ BCD.ajaxCache('./json/article.json', function(data) {
         next();
       }else if(key=='tag'){
         c_pageList(page, key);
+        next();
+      }else if(key=='search'){
+        c_pageSearch(page, key);
         next();
       }else{
         let path = decodeURIComponent(key);

@@ -1,3 +1,4 @@
+const c_mainContainer = require('card/common/main_container');
 const c_footer = require('card/common/footer');
 const m_article = require('model/article');
 const m_config = require('model/config');
@@ -8,12 +9,7 @@ const m_initOption = require('helper/init_option');
 
 
 module.exports = function(page, key) {
-  let viewBody = $('<div class="container">' +
-    '  <div class="row">' +
-    '    <div class="col-md-8" data-selector="main"></div>' +
-    '    <div class="col-md-4" data-selector="panel"></div>' +
-    '  </div>' +
-    '</div>');
+  let viewBody = c_mainContainer();
   let viewContent = viewBody.find('[data-selector="main"]');
   let viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
   viewContent.setView(c_content({
@@ -29,14 +25,17 @@ module.exports = function(page, key) {
   });
   page.setView({
     start: function(hasRender){
+      if(hasRender){
+        return m_initOption.notRender(hasRender);
+      }
       if(m_article.getArticle(key)){
         m_article.getArticleContent(key).then((data)=>{
+          page.setView({title: data.title});
+          document.title = data.title;
           viewContent.reset(data);
         });
       }
-      return m_initOption.notRender(hasRender);
     },
-    title: '文章列表',
     viewList: [viewBody, viewFoot]
   })
 };

@@ -202,7 +202,6 @@ var preloadList = function(msgObj) {
               });
             }
           }).then(function(resp){
-            console.log('preloadList() resp', resp);
             if(resp.status==200){
               retDict[url] = resp.text();
             }

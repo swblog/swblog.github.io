@@ -1,4 +1,4 @@
-﻿ //顶部导航
+﻿ //文章列表
 module.exports = function(option) {
   return $.extend({
     name: 'blog/article_list',

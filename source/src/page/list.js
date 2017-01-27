@@ -1,4 +1,5 @@
 const c_footer = require('card/common/footer');
+const c_mainContainer = require('card/common/main_container');
 const m_article = require('model/article');
 const m_config = require('model/config');
 const m_initOption = require('helper/init_option');
@@ -8,12 +9,7 @@ const c_articleList = require('card/blog/article_list');
 
 
 module.exports = function(page, key) {
-  let viewBody = $('<div class="container">' +
-    '  <div class="row">' +
-    '    <div class="col-md-8" data-selector="main"></div>' +
-    '    <div class="col-md-4" data-selector="panel"></div>' +
-    '  </div>' +
-    '</div>');
+  let viewBody = c_mainContainer();
   let viewList = viewBody.find('[data-selector="main"]');
   let viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
   viewList.setView(c_articleList({
@@ -29,6 +25,7 @@ module.exports = function(page, key) {
   });
   page.setView({
     start: function(hasRender){
+      viewList.hide();
       let hrefHead = location.hash.replace(/\/\d*$/, '');
       if(key=='index'){
         m_article.getListByTag(0, BCD.getHash(1)).then((data)=>{

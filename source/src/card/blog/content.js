@@ -1,4 +1,4 @@
-//顶部导航
+//单个文章
 module.exports = function(option) {
  return $.extend({
    name: 'blog/content',
