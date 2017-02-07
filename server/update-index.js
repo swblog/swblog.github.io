@@ -12,7 +12,7 @@ const pushGit = function () {
     exec(item, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
-        return;
+        return exec('start ./server/helper/update.sh');
       }
       next();
       console.log(`stdout: ${stdout}`);
