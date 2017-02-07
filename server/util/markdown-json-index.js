@@ -13,7 +13,7 @@ const createIndex = (path) => fs.readdirSync(path).map(file => {
      ret.child = createIndex(filePath);
    }else{
      let path= require('path');
-     filePath = path.resolve('/');
+     filePath = path.resolve('./');
      console.log(filePath);
      git(filePath).log(['-1'], (err, result) => {
        console.log('err', err);
