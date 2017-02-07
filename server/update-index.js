@@ -18,7 +18,8 @@ const pushGit = function () {
           }
         });
       }
-      console.log(item, stdout || stderr);
+      console.log('>', item);
+      console.log(stdout || stderr);
       if(list.length > 0){
         next();
       }else{
