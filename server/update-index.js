@@ -4,7 +4,7 @@ const {
   iterator
 } = require('./util');
 const exec = require('child_process').exec;
-
+const articleJson = './json/article.json';
 
 const pushGit = function () {
   const cmdList = ['git pull origin master', 'git add .', 'git commit -am "[update] article"', 'git push origin master'];
@@ -29,11 +29,11 @@ const pushGit = function () {
   });
 };
 
-fs.writeFile('./json/article.json',
+fs.writeFile(articleJson,
   JSON.stringify(getIndex('blog'), null, 1),
   function (err) {
     if (err) throw err;
-    console.log('It\'s saved to article.json!');
+    console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
     pushGit();
   }
 );
