@@ -27,6 +27,7 @@
   },
   "version": "0.0.0",
   "scripts": {
-    "start": "node server/app.js"
+    "start": "node server/app.js",
+    "update": "node server/update-index.js"
   }
 }
