@@ -12,11 +12,19 @@ const pushGit = function () {
     exec(item, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
-        return exec('start ./server/helper/update.sh');
+        return exec('start ./server/helper/update.sh', (error, stdout, stderr) => {
+          if (error) {
+            console.log('push到远程git仓库出现异常，请手动提交');
+          }
+          console.log('start ./server/helper/update.sh', stdout || stderr);
+        });
       }
-      next();
-      console.log(`stdout: ${stdout}`);
-      console.log(`stderr: ${stderr}`);
+      console.log(item, stdout || stderr);
+      if(list.length > 0){
+        next();
+      }else{
+        console.log('已经push到远程git仓库');
+      }
     });
   });
 };
