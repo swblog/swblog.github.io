@@ -1,7 +1,7 @@
 const gulp = require('gulp');
 const fs = require('fs');
 const open = require('gulp-open');
-const getIndex = require('markdown-json-index');
+const updateJSON = require('./server/update-index.js');
 const os = require('os');
 const plumber = require('gulp-plumber');
 const webpack = require('webpack-stream');
@@ -15,12 +15,7 @@ const articleJson = './json/article.json';
 
 //产生文章列表的接口文件
 gulp.task('gen', function() {
-  fs.writeFile(articleJson,
-    JSON.stringify(getIndex('blog'), null, 1),
-    function(err) {
-      if (err) throw err;
-      console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
-    });
+  updateJSON();
 });
 
 //本地服务

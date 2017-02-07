@@ -29,7 +29,7 @@ const pushGit = function () {
   });
 };
 
-getIndex('blog', function(data){
+const updateJSON = ()=> getIndex('blog', function(data){
   fs.writeFile(articleJson,
     JSON.stringify(data, null, 1),
     function (err) {
@@ -39,3 +39,10 @@ getIndex('blog', function(data){
     }
   );
 });
+
+
+if(module.parent){
+  module.exports = updateJSON;
+}else{
+  updateJSON();
+}
