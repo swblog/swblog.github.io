@@ -1,3 +1,4 @@
+const iterator = require('./iterator');
 const fs = require('fs');
 let myGit;
 try{
@@ -15,11 +16,6 @@ const createIndex = (path) => fs.readdirSync(path).map(file => {
    };
    if(fileStat.isDirectory()){
      ret.child = createIndex(filePath);
-   }else if(myGit){
-     myGit.log([filePath], (err, result) => {
-       console.log('err', err);
-       console.log('result', result);
-     });
    }
    return ret;
  }).filter(o => {
@@ -30,10 +26,41 @@ const createIndex = (path) => fs.readdirSync(path).map(file => {
    }
 });
 
-module.exports = function(path, ext){
-  if(ext){
-    reg = new RegExp('\.'+ ext +'$');
-  }
+const reviseTime = function(list, callback){
+  iterator(list, function(item, next, arr){
+    console.log(item.path);
+    myGit.log(['-1', item.path], (err, result) => {
+      let originItem = arr.filter(o=>o.path==item.path)[0] || item;
+      let logLine = result && result.latest;
+      if(logLine){
+        console.log('logLine', logLine);
+        originItem.mtime = new Date(logLine.date).getTime();
+        originItem.message = logLine.message;
+      }else{
+        console.log('logLine null');
+      }
+      console.log('originItem', originItem);
+
+      if(originItem.child && originItem.child.length){
+        reviseTime(originItem.child, next);
+      }else{
+        next();
+      }
+
+      if(arr.length===0){
+        console.log('callback');
+        callback(list);
+      }
+    });
+  });
+}
+
+module.exports = function(path, callback){
   let runningPath = process.cwd()+'/';
-  return createIndex(path.replace(runningPath, ''));
+  let indexJson = createIndex(path.replace(runningPath, ''));
+  if(myGit){
+    reviseTime(indexJson, ()=>callback(indexJson));
+  }else{
+    callback(indexJson);
+  }
 };

@@ -29,11 +29,13 @@ const pushGit = function () {
   });
 };
 
-fs.writeFile(articleJson,
-  JSON.stringify(getIndex('blog'), null, 1),
-  function (err) {
-    if (err) throw err;
-    console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
-    pushGit();
-  }
-);
+getIndex('blog', function(data){
+  fs.writeFile(articleJson,
+    JSON.stringify(data, null, 1),
+    function (err) {
+      if (err) throw err;
+      console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
+      pushGit();
+    }
+  );
+});
