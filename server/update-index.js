@@ -16,7 +16,6 @@ const pushGit = function () {
           if (error) {
             console.log('push到远程git仓库出现异常，请手动提交');
           }
-          console.log('start ./server/helper/update.sh', stdout || stderr);
         });
       }
       console.log(item, stdout || stderr);
