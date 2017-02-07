@@ -11,7 +11,7 @@ fs.writeFile('./json/article.json',
 );
 
 
-exec("pwd", (error, stdout, stderr) => {
+exec('git commit -am "[update] article"', (error, stdout, stderr) => {
   if (error) {
     console.error(`exec error: ${error}`);
     return;
