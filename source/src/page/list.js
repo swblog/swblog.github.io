@@ -25,7 +25,7 @@ module.exports = function(page, key) {
   });
   page.setView({
     start: function(hasRender){
-      viewList.hide();
+      viewList.empty();
       let hrefHead = location.hash.replace(/\/\d*$/, '');
       if(key=='index'){
         m_article.getListByTag(0, BCD.getHash(1)).then((data)=>{
