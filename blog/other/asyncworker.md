@@ -1,5 +1,5 @@
 ## Asynchronous work helpers
-
+ 
 `Nan::AsyncWorker` and `Nan::AsyncProgressWorker` are helper classes that make working with asynchronous code easier.
 
  - <a href="#api_nan_async_worker"><b><code>Nan::AsyncWorker</code></b></a>

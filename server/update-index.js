@@ -29,13 +29,13 @@ const pushGit = function () {
   });
 };
 
-const updateJSON = ()=> getIndex('blog', function(data){
+const updateJSON = (callback)=> getIndex('blog', function(data){
   fs.writeFile(articleJson,
     JSON.stringify(data, null, 1),
     function (err) {
       if (err) throw err;
       console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
-      pushGit();
+      if(callback)callback();
     }
   );
 });
@@ -44,5 +44,5 @@ const updateJSON = ()=> getIndex('blog', function(data){
 if(module.parent){
   module.exports = updateJSON;
 }else{
-  updateJSON();
+  updateJSON(pushGit);
 }

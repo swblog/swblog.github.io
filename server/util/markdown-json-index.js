@@ -30,6 +30,9 @@ const reviseTime = function(list, callback){
   iterator(list, function(item, next, arr){
     console.log(item.path);
     myGit.log(['-1', item.path], (err, result) => {
+      if(err){
+        console.log('建议使用Git Bash执行该命令');
+      }
       let originItem = list.filter(o=>o.path==item.path)[0] || item;
       let logLine = result && result.latest;
       if(logLine){
@@ -49,6 +52,7 @@ const reviseTime = function(list, callback){
         callback(list);
       }
     });
+
   });
 }
 

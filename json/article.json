@@ -1,163 +1,192 @@
 [
  {
   "path": "blog/Chrome 扩展 学习资料汇总.md",
-  "mtime": 1486435845720
+  "mtime": 1485169208000,
+  "message": "init"
  },
  {
   "path": "blog/hello",
-  "mtime": 1486435845720,
-  "child": []
+  "mtime": 1485169208000,
+  "child": [],
+  "message": "init"
  },
  {
   "path": "blog/Markdown语法.md",
-  "mtime": 1486435845720
+  "mtime": 1485169208000,
+  "message": "init"
  },
  {
   "path": "blog/other",
-  "mtime": 1486474894305,
+  "mtime": 1486474897000,
   "child": [
    {
-    "path": "blog/other/about-rules.md",
-    "mtime": 1486435845720
-   },
-   {
-    "path": "blog/other/api.md",
-    "mtime": 1486435845720
-   },
-   {
     "path": "blog/other/asyncworker.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/AUTHORS.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/broken.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/buffers.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/callback.md",
-    "mtime": 1486435845720
+    "mtime": 1485339401000,
+    "message": "[add]service worker 预加载"
    },
    {
     "path": "blog/other/changelog.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/collaborators.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/FAQ.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/History.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/is.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/isEmpty.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/ISSUE_TEMPLATE.md",
-    "mtime": 1486435845720
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/jade.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/karma.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/key.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/lab.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/label-has-for.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/license.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/logLevel.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/logProvider.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/loop-closures.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-dist-tag.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-docs.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-help-search.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-link.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-owner.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/npm-prune.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/persistent.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/plugins.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    },
    {
     "path": "blog/other/postcss-plugin.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    }
-  ]
+  ],
+  "message": "[update] article (HEAD -> master, origin/master, origin/HEAD)"
  },
  {
   "path": "blog/未命名文件夹",
-  "mtime": 1486435845735,
+  "mtime": 1485169208000,
   "child": [
    {
     "path": "blog/未命名文件夹/TinyBlog.md",
-    "mtime": 1486435845735
+    "mtime": 1485169208000,
+    "message": "init"
    }
-  ]
+  ],
+  "message": "init"
  },
  {
   "path": "blog/评论测试.md",
-  "mtime": 1486435845735
+  "mtime": 1485169208000,
+  "message": "init"
  }
 ]
