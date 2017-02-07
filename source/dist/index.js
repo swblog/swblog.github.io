@@ -141,7 +141,7 @@
 	
 	
 	// module
-	exports.push([module.id, "[data-url]{\n  cursor: pointer;\n}\n", ""]);
+	exports.push([module.id, "[data-url]{\r\n  cursor: pointer;\r\n}\r\n", ""]);
 	
 	// exports
 

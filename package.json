@@ -27,7 +27,7 @@
   },
   "version": "0.0.0",
   "scripts": {
-    "start": "node server/app.js",
+    "start": "gulp watch",
     "update": "node server/update-index.js"
   }
 }

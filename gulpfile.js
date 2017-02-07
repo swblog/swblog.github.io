@@ -11,13 +11,15 @@ const browser = os.platform() === 'linux' ? 'google-chrome' : (
   os.platform() === 'darwin' ? 'google chrome' : (
     os.platform() === 'win32' ? 'chrome' : 'firefox'));
 
+const articleJson = './json/article.json';
+
 //产生文章列表的接口文件
 gulp.task('gen', function() {
-  fs.writeFile('./json/article.json',
+  fs.writeFile(articleJson,
     JSON.stringify(getIndex('blog'), null, 1),
     function(err) {
       if (err) throw err;
-      console.log('It\'s saved to article.json!');
+      console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
     });
 });
 
