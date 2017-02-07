@@ -2,7 +2,7 @@ const iterator = require('./iterator');
 const fs = require('fs');
 let myGit;
 try{
-    myGit = require('simple-git')('./');
+    myGit = require('simple-git')('./'); //这里使用git提交的时间进行修正，确保在不同仓库中的一致性。
 }catch(e){}
 
 let reg = /\.md$/;
@@ -38,7 +38,7 @@ const reviseTime = function(list, callback){
       if(logLine){
         //console.log('logLine', logLine);
         originItem.mtime = new Date(logLine.date).getTime();
-        originItem.message = logLine.message;
+        //originItem.message = logLine.message;
       }
       //console.log('originItem', originItem);
 
