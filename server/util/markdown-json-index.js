@@ -37,7 +37,7 @@ const reviseTime = function(list, callback){
         originItem.mtime = new Date(logLine.date).getTime();
         originItem.message = logLine.message;
       }
-      console.log('originItem', originItem);
+      //console.log('originItem', originItem);
 
       if(originItem.child && originItem.child.length){
         reviseTime(originItem.child, next);
