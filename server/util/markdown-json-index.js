@@ -12,10 +12,10 @@ const createIndex = (path) => fs.readdirSync(path).map(file => {
    if(fileStat.isDirectory()){
      ret.child = createIndex(filePath);
    }else{
-     let path= require('path');
-     filePath = path.resolve('./');
-     console.log(filePath);
-     git(filePath).log(['-1'], (err, result) => {
+    //  let path= require('path');
+    //  filePath = path.resolve('./', filePath);
+    //  console.log(filePath);
+     git('./').log(['-1', filePath], (err, result) => {
        console.log('err', err);
        console.log('result', result);
      });
