@@ -29,11 +29,6 @@ const pushGit = function () {
   });
 };
 
-try{
-  require('asdfasd');
-}catch(e){
-  console.log(e);
-}
 fs.writeFile(articleJson,
   JSON.stringify(getIndex('blog'), null, 1),
   function (err) {

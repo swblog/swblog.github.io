@@ -1,5 +1,9 @@
 const fs = require('fs');
-const myGit = require('simple-git')('./');
+let myGit;
+try{
+    myGit = require('simple-git')('./');
+}catch(e){}
+
 let reg = /\.md$/;
 //遍历读取文件
 const createIndex = (path) => fs.readdirSync(path).map(file => {
@@ -11,8 +15,8 @@ const createIndex = (path) => fs.readdirSync(path).map(file => {
    };
    if(fileStat.isDirectory()){
      ret.child = createIndex(filePath);
-   }else{
-     myGit.log(['-1', filePath], (err, result) => {
+   }else if(myGit){
+     myGit.log([filePath], (err, result) => {
        console.log('err', err);
        console.log('result', result);
      });
