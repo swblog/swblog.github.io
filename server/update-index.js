@@ -13,8 +13,8 @@ const pushGit = function (cmdList) {
   return new Promise(function(resolve){
       iterator(cmdList, function (item, next, list) {
         exec(item, (error, stdout, stderr) => {
-          if (error && os.platform() === 'win32' && !/commit/.test(error)) {
-            if(/pull/.test(error)){
+          if (error && os.platform() === 'win32' && !/commit/.test(error)) {//git commit -am "[update] article"的异常可以忽略
+            if(/pull/.test(error)){//如果第一次执行git pull说明是commit 文章，否则是提交代码
               return resolve();
             }
             console.error(`exec error: ${error}`);
