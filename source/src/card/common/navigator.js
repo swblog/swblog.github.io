@@ -1,6 +1,6 @@
-//<li><a href="#">Action</a></li>
 const m_util = require('common/util');
 const m_article = require('model/article');
+const m_config = require('model/config');
 
 
 BCD.addEvent('navigator_search', function(ele){
@@ -89,8 +89,9 @@ module.exports = function(option) {
   let viewHeader = $('<header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner"></header>');
   option = $.extend({
     name: 'common/header',
-    url: './json/config.json',
-    update: 'd',
+    getData: function() {
+      return m_config.getConfigSync()
+    },
     template: '  <div class="container">' +
       '    <div class="navbar-header">' +
       '      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">' +
@@ -99,12 +100,12 @@ module.exports = function(option) {
       '        <span class="icon-bar"></span>' +
       '        <span class="icon-bar"></span>' +
       '      </button>' +
-      '      <a href="#!/index" class="logo-link" style="padding: 12px;"><%-obj.author%>的博客</a>' +
+      '      <a data-on="?m=go" data-url="<%=CONFIG.getIndex()%>" class="logo-link" style="padding: 12px;"><%-obj.logoTitle%></a>' +
       '    </div>' +
       '    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">' +
       '      <div class="navbar-form navbar-right" data-on="?m=navigator_search"></div>'+
       '      <ul class="nav navbar-nav"><%(obj.nav || []).forEach(function(o){%>' +
-      '        <li class="<%=location.hash==o[1] ? "active" : ""%>"><a href="<%=o[1]%>"><%-o[0]%></a></li>' +
+      '        <li class="<%=location.hash==o[1] ? "active" : ""%>"><a data-on="?m=replaceHash" data-url="<%=o[1]%>"><%-o[0]%></a></li>' +
       '        <%})%>' +
       '      </ul>' +
       '    </nav>' +

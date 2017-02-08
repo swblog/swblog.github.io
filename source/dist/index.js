@@ -52,57 +52,55 @@
 	 */
 	
 	__webpack_require__(1);
-	__webpack_require__(5);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(11);
-	var c_header = __webpack_require__(12);
-	var c_pageList = __webpack_require__(13);
-	var c_pageContent = __webpack_require__(20);
-	var c_pageSearch = __webpack_require__(22);
-	var viewHeader = c_header({
-	  check: function check(obj) {
-	    if (!!obj.author) {
-	      m_config.init(obj);
-	      return true;
-	    }
-	  }
-	});
+	var m_article = __webpack_require__(4);
+	var m_config = __webpack_require__(7);
+	var c_header = __webpack_require__(8);
+	var c_pageList = __webpack_require__(9);
+	var c_pageContent = __webpack_require__(16);
+	var c_pageBlog = __webpack_require__(18);
+	var c_pageSearch = __webpack_require__(19);
+	var viewHeader = c_header();
 	$('body').append(viewHeader);
 	
-	BCD.ajaxCache('./json/article.json', function (data) {
-	  m_article.init(data);
-	  //入口
-	  BCD.app({
-	    setTitle: function setTitle(str) {
-	      viewHeader.reset();
-	      document.title = str;
-	    },
-	    initPage: function initPage(key, next) {
+	m_config.getConfig(function () {
+	  BCD.ajaxCache('./json/article.json', function (data) {
+	    m_article.init(data);
+	    //入口
+	    BCD.app({
+	      setTitle: function setTitle(str) {
+	        viewHeader.reset();
+	        document.title = str;
+	      },
+	      initPage: function initPage(key, next) {
 	
-	      var page = this;
-	      if (key == 'index') {
-	        c_pageList(page, key);
-	        next();
-	      } else if (key == 'tag') {
-	        c_pageList(page, key);
-	        next();
-	      } else if (key == 'search') {
-	        c_pageSearch(page, key);
-	        next();
-	      } else {
-	        var path = decodeURIComponent(key);
-	        if (m_article.getCatalog(path)) {
-	          c_pageList(page, path);
-	          return next();
-	        } else if (m_article.getArticle(path)) {
-	          c_pageContent(page, path);
-	          return next();
+	        var page = this;
+	        if (key == 'index') {
+	          c_pageList(page, key);
+	          next();
+	        } else if (key == 'tag') {
+	          c_pageList(page, key);
+	          next();
+	        } else if (key == 'blog') {
+	          c_pageBlog(page);
+	          next();
+	        } else if (key == 'search') {
+	          c_pageSearch(page, key);
+	          next();
+	        } else {
+	          var path = decodeURIComponent(key);
+	          if (m_article.getCatalog(path)) {
+	            c_pageList(page, path);
+	            return next();
+	          } else if (m_article.getArticle(path)) {
+	            c_pageContent(page, path);
+	            return next();
+	          }
+	
+	          BCD.replaceHash(m_config.getIndex());
+	          next(-1);
 	        }
-	
-	        BCD.replaceHash('#!/index');
-	        next(-1);
 	      }
-	    }
+	    });
 	  });
 	});
 
@@ -110,356 +108,9 @@
 /* 1 */
 /***/ function(module, exports, __webpack_require__) {
 
-	// style-loader: Adds some css to the DOM by adding a <style> tag
-	
-	// load the styles
-	var content = __webpack_require__(2);
-	if(typeof content === 'string') content = [[module.id, content, '']];
-	// add the styles to the DOM
-	var update = __webpack_require__(4)(content, {});
-	if(content.locals) module.exports = content.locals;
-	// Hot Module Replacement
-	if(false) {
-		// When the styles change, update the <style> tags
-		if(!content.locals) {
-			module.hot.accept("!!./../../../node_modules/css-loader/index.js!./blog.css", function() {
-				var newContent = require("!!./../../../node_modules/css-loader/index.js!./blog.css");
-				if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
-				update(newContent);
-			});
-		}
-		// When the module is disposed, remove the <style> tags
-		module.hot.dispose(function() { update(); });
-	}
-
-/***/ },
-/* 2 */
-/***/ function(module, exports, __webpack_require__) {
-
-	exports = module.exports = __webpack_require__(3)();
-	// imports
-	
-	
-	// module
-	exports.push([module.id, "[data-url]{\r\n  cursor: pointer;\r\n}\r\n", ""]);
-	
-	// exports
-
-
-/***/ },
-/* 3 */
-/***/ function(module, exports) {
-
-	"use strict";
-	
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	// css base code, injected by the css-loader
-	module.exports = function () {
-		var list = [];
-	
-		// return the list of modules as css string
-		list.toString = function toString() {
-			var result = [];
-			for (var i = 0; i < this.length; i++) {
-				var item = this[i];
-				if (item[2]) {
-					result.push("@media " + item[2] + "{" + item[1] + "}");
-				} else {
-					result.push(item[1]);
-				}
-			}
-			return result.join("");
-		};
-	
-		// import a list of modules into the list
-		list.i = function (modules, mediaQuery) {
-			if (typeof modules === "string") modules = [[null, modules, ""]];
-			var alreadyImportedModules = {};
-			for (var i = 0; i < this.length; i++) {
-				var id = this[i][0];
-				if (typeof id === "number") alreadyImportedModules[id] = true;
-			}
-			for (i = 0; i < modules.length; i++) {
-				var item = modules[i];
-				// skip already imported module
-				// this implementation is not 100% perfect for weird media query combinations
-				//  when a module is imported multiple times with different media queries.
-				//  I hope this will never occur (Hey this way we have smaller bundles)
-				if (typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
-					if (mediaQuery && !item[2]) {
-						item[2] = mediaQuery;
-					} else if (mediaQuery) {
-						item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
-					}
-					list.push(item);
-				}
-			}
-		};
-		return list;
-	};
-
-/***/ },
-/* 4 */
-/***/ function(module, exports, __webpack_require__) {
-
-	/*
-		MIT License http://www.opensource.org/licenses/mit-license.php
-		Author Tobias Koppers @sokra
-	*/
-	var stylesInDom = {},
-		memoize = function(fn) {
-			var memo;
-			return function () {
-				if (typeof memo === "undefined") memo = fn.apply(this, arguments);
-				return memo;
-			};
-		},
-		isOldIE = memoize(function() {
-			return /msie [6-9]\b/.test(window.navigator.userAgent.toLowerCase());
-		}),
-		getHeadElement = memoize(function () {
-			return document.head || document.getElementsByTagName("head")[0];
-		}),
-		singletonElement = null,
-		singletonCounter = 0,
-		styleElementsInsertedAtTop = [];
-	
-	module.exports = function(list, options) {
-		if(true) {
-			if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
-		}
-	
-		options = options || {};
-		// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
-		// tags it will allow on a page
-		if (typeof options.singleton === "undefined") options.singleton = isOldIE();
-	
-		// By default, add <style> tags to the bottom of <head>.
-		if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
-	
-		var styles = listToStyles(list);
-		addStylesToDom(styles, options);
-	
-		return function update(newList) {
-			var mayRemove = [];
-			for(var i = 0; i < styles.length; i++) {
-				var item = styles[i];
-				var domStyle = stylesInDom[item.id];
-				domStyle.refs--;
-				mayRemove.push(domStyle);
-			}
-			if(newList) {
-				var newStyles = listToStyles(newList);
-				addStylesToDom(newStyles, options);
-			}
-			for(var i = 0; i < mayRemove.length; i++) {
-				var domStyle = mayRemove[i];
-				if(domStyle.refs === 0) {
-					for(var j = 0; j < domStyle.parts.length; j++)
-						domStyle.parts[j]();
-					delete stylesInDom[domStyle.id];
-				}
-			}
-		};
-	}
-	
-	function addStylesToDom(styles, options) {
-		for(var i = 0; i < styles.length; i++) {
-			var item = styles[i];
-			var domStyle = stylesInDom[item.id];
-			if(domStyle) {
-				domStyle.refs++;
-				for(var j = 0; j < domStyle.parts.length; j++) {
-					domStyle.parts[j](item.parts[j]);
-				}
-				for(; j < item.parts.length; j++) {
-					domStyle.parts.push(addStyle(item.parts[j], options));
-				}
-			} else {
-				var parts = [];
-				for(var j = 0; j < item.parts.length; j++) {
-					parts.push(addStyle(item.parts[j], options));
-				}
-				stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
-			}
-		}
-	}
-	
-	function listToStyles(list) {
-		var styles = [];
-		var newStyles = {};
-		for(var i = 0; i < list.length; i++) {
-			var item = list[i];
-			var id = item[0];
-			var css = item[1];
-			var media = item[2];
-			var sourceMap = item[3];
-			var part = {css: css, media: media, sourceMap: sourceMap};
-			if(!newStyles[id])
-				styles.push(newStyles[id] = {id: id, parts: [part]});
-			else
-				newStyles[id].parts.push(part);
-		}
-		return styles;
-	}
-	
-	function insertStyleElement(options, styleElement) {
-		var head = getHeadElement();
-		var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
-		if (options.insertAt === "top") {
-			if(!lastStyleElementInsertedAtTop) {
-				head.insertBefore(styleElement, head.firstChild);
-			} else if(lastStyleElementInsertedAtTop.nextSibling) {
-				head.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
-			} else {
-				head.appendChild(styleElement);
-			}
-			styleElementsInsertedAtTop.push(styleElement);
-		} else if (options.insertAt === "bottom") {
-			head.appendChild(styleElement);
-		} else {
-			throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
-		}
-	}
-	
-	function removeStyleElement(styleElement) {
-		styleElement.parentNode.removeChild(styleElement);
-		var idx = styleElementsInsertedAtTop.indexOf(styleElement);
-		if(idx >= 0) {
-			styleElementsInsertedAtTop.splice(idx, 1);
-		}
-	}
-	
-	function createStyleElement(options) {
-		var styleElement = document.createElement("style");
-		styleElement.type = "text/css";
-		insertStyleElement(options, styleElement);
-		return styleElement;
-	}
-	
-	function createLinkElement(options) {
-		var linkElement = document.createElement("link");
-		linkElement.rel = "stylesheet";
-		insertStyleElement(options, linkElement);
-		return linkElement;
-	}
-	
-	function addStyle(obj, options) {
-		var styleElement, update, remove;
-	
-		if (options.singleton) {
-			var styleIndex = singletonCounter++;
-			styleElement = singletonElement || (singletonElement = createStyleElement(options));
-			update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
-			remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
-		} else if(obj.sourceMap &&
-			typeof URL === "function" &&
-			typeof URL.createObjectURL === "function" &&
-			typeof URL.revokeObjectURL === "function" &&
-			typeof Blob === "function" &&
-			typeof btoa === "function") {
-			styleElement = createLinkElement(options);
-			update = updateLink.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-				if(styleElement.href)
-					URL.revokeObjectURL(styleElement.href);
-			};
-		} else {
-			styleElement = createStyleElement(options);
-			update = applyToTag.bind(null, styleElement);
-			remove = function() {
-				removeStyleElement(styleElement);
-			};
-		}
-	
-		update(obj);
-	
-		return function updateStyle(newObj) {
-			if(newObj) {
-				if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
-					return;
-				update(obj = newObj);
-			} else {
-				remove();
-			}
-		};
-	}
-	
-	var replaceText = (function () {
-		var textStore = [];
-	
-		return function (index, replacement) {
-			textStore[index] = replacement;
-			return textStore.filter(Boolean).join('\n');
-		};
-	})();
-	
-	function applyToSingletonTag(styleElement, index, remove, obj) {
-		var css = remove ? "" : obj.css;
-	
-		if (styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = replaceText(index, css);
-		} else {
-			var cssNode = document.createTextNode(css);
-			var childNodes = styleElement.childNodes;
-			if (childNodes[index]) styleElement.removeChild(childNodes[index]);
-			if (childNodes.length) {
-				styleElement.insertBefore(cssNode, childNodes[index]);
-			} else {
-				styleElement.appendChild(cssNode);
-			}
-		}
-	}
-	
-	function applyToTag(styleElement, obj) {
-		var css = obj.css;
-		var media = obj.media;
-	
-		if(media) {
-			styleElement.setAttribute("media", media)
-		}
-	
-		if(styleElement.styleSheet) {
-			styleElement.styleSheet.cssText = css;
-		} else {
-			while(styleElement.firstChild) {
-				styleElement.removeChild(styleElement.firstChild);
-			}
-			styleElement.appendChild(document.createTextNode(css));
-		}
-	}
-	
-	function updateLink(linkElement, obj) {
-		var css = obj.css;
-		var sourceMap = obj.sourceMap;
-	
-		if(sourceMap) {
-			// http://stackoverflow.com/a/26603875
-			css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
-		}
-	
-		var blob = new Blob([css], { type: "text/css" });
-	
-		var oldSrc = linkElement.href;
-	
-		linkElement.href = URL.createObjectURL(blob);
-	
-		if(oldSrc)
-			URL.revokeObjectURL(oldSrc);
-	}
-
-
-/***/ },
-/* 5 */
-/***/ function(module, exports, __webpack_require__) {
-
 	'use strict';
 	
-	var m_util = __webpack_require__(6);
+	var m_util = __webpack_require__(2);
 	//data-on="?m=go" data-url="<%=o.href%>"
 	var go = function go(ele, option, data) {
 	  ele.on('click', function (e) {
@@ -477,19 +128,27 @@
 	};
 	BCD.addEvent('back', back);
 	
+	var replaceHash = function replaceHash(ele, option, data) {
+	  ele.on('click', function (e) {
+	    BCD.replaceHash(ele.data('url'));
+	    m_util.stopBubble(e);
+	  });
+	};
+	BCD.addEvent('replaceHash', go);
 	//事件绑定
 	module.exports = {
 	  go: go,
-	  back: back
+	  back: back,
+	  replaceHash: replaceHash
 	};
 
 /***/ },
-/* 6 */
+/* 2 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var m_event = __webpack_require__(7);
+	var m_event = __webpack_require__(3);
 	var getTime = function getTime(date) {
 	  date = new Date(date);
 	  var now = new Date();
@@ -525,7 +184,7 @@
 	};
 
 /***/ },
-/* 7 */
+/* 3 */
 /***/ function(module, exports) {
 
 	"use strict";
@@ -563,16 +222,16 @@
 	};
 
 /***/ },
-/* 8 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 	
-	var m_util = __webpack_require__(6);
-	var m_search = __webpack_require__(9);
-	var swPostMessage = __webpack_require__(10);
+	var m_util = __webpack_require__(2);
+	var m_search = __webpack_require__(5);
+	var swPostMessage = __webpack_require__(6);
 	var pathList = []; //路径列表
 	var catalogList = []; //目录列表
 	var articleList = []; //文件列表
@@ -950,7 +609,7 @@
 	};
 
 /***/ },
-/* 9 */
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1011,12 +670,12 @@
 	};
 
 /***/ },
-/* 10 */
+/* 6 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var m_util = __webpack_require__(6);
+	var m_util = __webpack_require__(2);
 	
 	var index = 0;
 	var postMessage = function postMessage() {};
@@ -1049,34 +708,62 @@
 	module.exports = postMessage; //postMessage(message, callback)
 
 /***/ },
-/* 11 */
+/* 7 */
 /***/ function(module, exports) {
 
 	"use strict";
 	
+	var isInit = false;
+	var callbackList = [];
+	var arr = location.host.split(".");
+	var isLocalhost = arr.length === 1;
+	var username = isLocalhost ? "swblog" : arr[0];
 	var config = {
-	  "author": "liquidliang",
-	  "nav": [["Home", "#!/index"], ["About", "#!/about"]]
+	  "author": username,
+	  "logoTitle": username + "的博客",
+	  "nav": [["Home", "#!/index"], ["About", "#!/blog/about.md"]]
 	};
+	//先用缓存，请求回来再更新
+	BCD.ajaxCache('./json/config.json', function (data) {
+	  config = data || config;
+	  config.logoTitle = config.logoTitle || username + "的博客";
+	  isInit = true;
+	  var cb = void 0;
+	  while (cb = callbackList.pop()) {
+	    cb(config);
+	  }
+	  if (config.author) {
+	    return 1; //缓存数据到localStorage
+	  }
+	}, 0, 1E3, true);
 	
-	module.exports = {
-	  init: function init(c) {
-	    return config = c;
+	window.CONFIG = module.exports = {
+	  username: username,
+	  getIndex: function getIndex() {
+	    return config.nav && config.nav[0] && config.nav[0][1] || "";
 	  },
-	  getConfig: function getConfig() {
+	  isLocalhost: isLocalhost,
+	  getConfigSync: function getConfigSync() {
 	    return config;
+	  },
+	  getConfig: function getConfig(callback) {
+	    if (isInit) {
+	      callback(config);
+	    } else {
+	      callbackList.push(callback);
+	    }
 	  }
 	};
 
 /***/ },
-/* 12 */
+/* 8 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	//<li><a href="#">Action</a></li>
-	var m_util = __webpack_require__(6);
-	var m_article = __webpack_require__(8);
+	var m_util = __webpack_require__(2);
+	var m_article = __webpack_require__(4);
+	var m_config = __webpack_require__(7);
 	
 	BCD.addEvent('navigator_search', function (ele) {
 	  ele.html('<div class="form-group open">' + '  <input type="text" class="form-control" placeholder="Search">' + '  <ul class="dropdown-menu" style="right:auto;display:none"></ul>' + '</div>' + '<button type="submit" class="btn btn-primary">Submit</button>');
@@ -1159,26 +846,26 @@
 	  var viewHeader = $('<header class="navbar navbar-inverse navbar-fixed-top bs-docs-nav" role="banner"></header>');
 	  option = $.extend({
 	    name: 'common/header',
-	    url: './json/config.json',
-	    update: 'd',
-	    template: '  <div class="container">' + '    <div class="navbar-header">' + '      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">' + '        <span class="sr-only">Toggle navigation</span>' + '        <span class="icon-bar"></span>' + '        <span class="icon-bar"></span>' + '        <span class="icon-bar"></span>' + '      </button>' + '      <a href="#!/index" class="logo-link" style="padding: 12px;"><%-obj.author%>的博客</a>' + '    </div>' + '    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">' + '      <div class="navbar-form navbar-right" data-on="?m=navigator_search"></div>' + '      <ul class="nav navbar-nav"><%(obj.nav || []).forEach(function(o){%>' + '        <li class="<%=location.hash==o[1] ? "active" : ""%>"><a href="<%=o[1]%>"><%-o[0]%></a></li>' + '        <%})%>' + '      </ul>' + '    </nav>' + '  </div>'
+	    getData: function getData() {
+	      return m_config.getConfigSync();
+	    },
+	    template: '  <div class="container">' + '    <div class="navbar-header">' + '      <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">' + '        <span class="sr-only">Toggle navigation</span>' + '        <span class="icon-bar"></span>' + '        <span class="icon-bar"></span>' + '        <span class="icon-bar"></span>' + '      </button>' + '      <a data-on="?m=go" data-url="<%=CONFIG.getIndex()%>" class="logo-link" style="padding: 12px;"><%-obj.logoTitle%></a>' + '    </div>' + '    <nav class="collapse navbar-collapse bs-navbar-collapse" role="navigation">' + '      <div class="navbar-form navbar-right" data-on="?m=navigator_search"></div>' + '      <ul class="nav navbar-nav"><%(obj.nav || []).forEach(function(o){%>' + '        <li class="<%=location.hash==o[1] ? "active" : ""%>"><a data-on="?m=replaceHash" data-url="<%=o[1]%>"><%-o[0]%></a></li>' + '        <%})%>' + '      </ul>' + '    </nav>' + '  </div>'
 	  }, option);
 	  return viewHeader.setView(option);
 	};
 
 /***/ },
-/* 13 */
+/* 9 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var c_footer = __webpack_require__(14);
-	var c_mainContainer = __webpack_require__(15);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(11);
-	var m_initOption = __webpack_require__(16);
-	var c_pannelList = __webpack_require__(17);
-	var c_articleList = __webpack_require__(19);
+	var c_footer = __webpack_require__(10);
+	var c_mainContainer = __webpack_require__(11);
+	var m_article = __webpack_require__(4);
+	var m_initOption = __webpack_require__(12);
+	var c_pannelList = __webpack_require__(13);
+	var c_articleList = __webpack_require__(15);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1190,11 +877,7 @@
 	  viewBody.addView(viewList);
 	  viewBody.addView(viewPannelList);
 	
-	  var viewFoot = c_footer({
-	    getData: function getData() {
-	      return m_config.getConfig();
-	    }
-	  });
+	  var viewFoot = c_footer();
 	  page.setView({
 	    start: function start(hasRender) {
 	      viewList.empty();
@@ -1229,23 +912,27 @@
 	};
 
 /***/ },
-/* 14 */
-/***/ function(module, exports) {
+/* 10 */
+/***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	//顶部导航
+	//页脚
+	var m_config = __webpack_require__(7);
 	module.exports = function (option) {
 	  var viewHeader = $('<footer></footer>');
 	  option = $.extend({
 	    name: 'common/footer',
+	    getData: function getData() {
+	      return m_config.getConfigSync();
+	    },
 	    template: '<div class="container">' + '  <hr>' + '  <p class="text-center">Copyright <%-obj.author%> © <%=new Date().getFullYear()%>. All rights reserved.</p>' + '</div>'
 	  }, option);
 	  return viewHeader.setView(option);
 	};
 
 /***/ },
-/* 15 */
+/* 11 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1255,7 +942,7 @@
 	};
 
 /***/ },
-/* 16 */
+/* 12 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1286,13 +973,13 @@
 	};
 
 /***/ },
-/* 17 */
+/* 13 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var m_article = __webpack_require__(8);
-	var c_pannel = __webpack_require__(18);
+	var m_article = __webpack_require__(4);
+	var c_pannel = __webpack_require__(14);
 	module.exports = function (view) {
 	  var viewPannelLastPost = c_pannel({
 	    data: {
@@ -1333,7 +1020,7 @@
 	};
 
 /***/ },
-/* 18 */
+/* 14 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1349,7 +1036,7 @@
 	};
 
 /***/ },
-/* 19 */
+/* 15 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1363,18 +1050,17 @@
 	};
 
 /***/ },
-/* 20 */
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var c_mainContainer = __webpack_require__(15);
-	var c_footer = __webpack_require__(14);
-	var m_article = __webpack_require__(8);
-	var m_config = __webpack_require__(11);
-	var c_pannelList = __webpack_require__(17);
-	var c_content = __webpack_require__(21);
-	var m_initOption = __webpack_require__(16);
+	var c_mainContainer = __webpack_require__(11);
+	var c_footer = __webpack_require__(10);
+	var m_article = __webpack_require__(4);
+	var c_pannelList = __webpack_require__(13);
+	var c_content = __webpack_require__(17);
+	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1386,11 +1072,7 @@
 	  viewBody.addView(viewContent);
 	  viewBody.addView(viewPannelList);
 	
-	  var viewFoot = c_footer({
-	    getData: function getData() {
-	      return m_config.getConfig();
-	    }
-	  });
+	  var viewFoot = c_footer();
 	  page.setView({
 	    start: function start(hasRender) {
 	      if (hasRender) {
@@ -1409,7 +1091,7 @@
 	};
 
 /***/ },
-/* 21 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1423,17 +1105,54 @@
 	};
 
 /***/ },
-/* 22 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var c_footer = __webpack_require__(14);
-	var c_mainContainer = __webpack_require__(15);
-	var m_config = __webpack_require__(11);
-	var m_initOption = __webpack_require__(16);
-	var c_pannelList = __webpack_require__(17);
-	var m_pullArticle = __webpack_require__(23);
+	var c_mainContainer = __webpack_require__(11);
+	var c_footer = __webpack_require__(10);
+	var m_article = __webpack_require__(4);
+	var c_content = __webpack_require__(17);
+	var m_initOption = __webpack_require__(12);
+	
+	module.exports = function (page) {
+	  var viewBody = $('<div class="container" style="min-height:' + ((window.innerHeight || 640) - 200) + 'px"/>').setView({
+	    name: 'blog/blog',
+	    delay: true,
+	    template: '<div data-on="?m=mkview"></div>'
+	  });
+	
+	  var viewFoot = c_footer();
+	  page.setView({
+	    start: function start(hasRender) {
+	      if (hasRender && BCD.history.getCode() == -1) {
+	        return m_initOption.notRender(hasRender);
+	      }
+	      var key = location.hash.replace('#!/', '');
+	      if (m_article.getArticle(key)) {
+	        m_article.getArticleContent(key).then(function (data) {
+	          page.setView({ title: data.title });
+	          document.title = data.title;
+	          viewBody.reset(data);
+	        });
+	      }
+	    },
+	    viewList: [viewBody, viewFoot]
+	  });
+	};
+
+/***/ },
+/* 19 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var c_footer = __webpack_require__(10);
+	var c_mainContainer = __webpack_require__(11);
+	var m_initOption = __webpack_require__(12);
+	var c_pannelList = __webpack_require__(13);
+	var m_pullArticle = __webpack_require__(20);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1446,11 +1165,7 @@
 	  viewBody.addView(viewList);
 	  viewBody.addView(viewPannelList);
 	
-	  var viewFoot = c_footer({
-	    getData: function getData() {
-	      return m_config.getConfig();
-	    }
-	  });
+	  var viewFoot = c_footer();
 	  var oldWord = '';
 	  page.setView({
 	    start: function start(hasRender) {
@@ -1466,7 +1181,7 @@
 	};
 
 /***/ },
-/* 23 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1474,7 +1189,7 @@
 	/**
 	 * 不断增加的列表
 	 */
-	var m_article = __webpack_require__(8);
+	var m_article = __webpack_require__(4);
 	var container = $('<div style="display:none;">' + '<div data-selector="tips" style="margin: 20px;font-size: 20px;"></div>' + '<div data-selector="pull_list"></div>' + '</div>');
 	
 	var viewRank = $(container.find('[data-selector="pull_list"]'));

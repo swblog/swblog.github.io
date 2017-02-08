@@ -1,33 +1,30 @@
 const c_mainContainer = require('card/common/main_container');
 const c_footer = require('card/common/footer');
 const m_article = require('model/article');
-const c_pannelList = require('card/blog/pannel_list');
 const c_content = require('card/blog/content');
 const m_initOption = require('helper/init_option');
 
 
 
-module.exports = function(page, key) {
-  let viewBody = c_mainContainer();
-  let viewContent = viewBody.find('[data-selector="main"]');
-  let viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
-  viewContent.setView(c_content({
-    delay: true
-  }));
-  viewBody.addView(viewContent);
-  viewBody.addView(viewPannelList);
+module.exports = function(page) {
+  let viewBody = $('<div class="container" style="min-height:'+((window.innerHeight||640) -200)+'px"/>').setView({
+   name: 'blog/blog',
+   delay: true,
+   template: '<div data-on="?m=mkview"></div>'
+ });
 
   let viewFoot = c_footer();
   page.setView({
     start: function(hasRender){
-      if(hasRender){
+      if(hasRender && BCD.history.getCode()==-1){
         return m_initOption.notRender(hasRender);
       }
+      let key = location.hash.replace('#!/', '');
       if(m_article.getArticle(key)){
         m_article.getArticleContent(key).then((data)=>{
           page.setView({title: data.title});
           document.title = data.title;
-          viewContent.reset(data);
+          viewBody.reset(data);
         });
       }
     },

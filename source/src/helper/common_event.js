@@ -16,8 +16,16 @@ const back = (ele, option, data)=>{
 };
 BCD.addEvent('back', back);
 
+const replaceHash = (ele, option, data)=>{
+  ele.on('click', function(e){
+    BCD.replaceHash(ele.data('url'));
+    m_util.stopBubble(e);
+  })
+};
+BCD.addEvent('replaceHash', go);
 //事件绑定
 module.exports = {
   go,
-  back
+  back,
+  replaceHash
 };

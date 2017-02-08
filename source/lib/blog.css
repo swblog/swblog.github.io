@@ -16,7 +16,7 @@ footer {
 #comments li {
     list-style: none;
 }
-        
+
 .photo {
 	margin-bottom: 10px;
 }
@@ -37,4 +37,9 @@ a.logo-link {
 	.group2 {
 		text-align: right;
 	}
+}
+
+
+[data-url]{
+  cursor: pointer;
 }

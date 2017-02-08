@@ -1,7 +1,6 @@
 const c_footer = require('card/common/footer');
 const c_mainContainer = require('card/common/main_container');
 const m_article = require('model/article');
-const m_config = require('model/config');
 const m_initOption = require('helper/init_option');
 const c_pannelList = require('card/blog/pannel_list');
 const c_articleList = require('card/blog/article_list');
@@ -18,11 +17,7 @@ module.exports = function(page, key) {
   viewBody.addView(viewList);
   viewBody.addView(viewPannelList);
 
-  let viewFoot = c_footer({
-    getData: function() {
-      return m_config.getConfig()
-    }
-  });
+  let viewFoot = c_footer();
   page.setView({
     start: function(hasRender){
       viewList.empty();

@@ -1,7 +1,9 @@
 {
   "author": "liquidliang",
+  "logoTitle": "swblog博客系统",
   "nav": [
-    ["Home", "#!/index"],
-    ["About", "#!/about"]
+    ["Home", "#!/blog/readme.md"],
+    ["About", "#!/blog/about.md"],
+    ["Document", "#!/blog%2Fdocument"]
   ]
 }
