@@ -31,7 +31,7 @@ const pushGit = function (cmdList) {
   });
 };
 
-const updateJSON = (callback)=> pushGit(['git pull origin master', 'git add .', 'git commit -am "[update] article"']).then(()=>getIndex('blog', function(data){
+const updateJSON = (callback)=> pushGit(['git pull origin master', 'git add .', 'git commit -am \"[update] article\"']).then(()=>getIndex('blog', function(data){
   fs.writeFile(articleJson,
     JSON.stringify(data, null, 1),
     function (err) {
@@ -47,6 +47,6 @@ if(module.parent){
   module.exports = updateJSON;
 }else{
   updateJSON(function(){
-    pushGit(['git commit -am "[update] article"', 'git push origin master']).then(()=>console.log('已经push到远程git仓库'));
+    pushGit(['git commit -am \"[update] article\"', 'git push origin master']).then(()=>console.log('已经push到远程git仓库'));
   });
 }
