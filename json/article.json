@@ -1,41 +1,20 @@
 [
  {
   "path": "blog/about.md",
-  "mtime": 1486543413000
+  "mtime": 1486543426000
  },
  {
   "path": "blog/document",
-  "mtime": 1486541458000,
+  "mtime": 1486541001000,
   "child": [
    {
     "path": "blog/document/Markdown语法.md",
-    "mtime": 1486541458000
+    "mtime": 1486541001000
    }
   ]
- },
- {
-  "path": "blog/hello",
-  "mtime": 1486541458000,
-  "child": [
-   {
-    "path": "blog/hello/ok",
-    "mtime": 1484994265000,
-    "child": []
-   }
-  ]
- },
- {
-  "path": "blog/other",
-  "mtime": 1486541458000,
-  "child": []
  },
  {
   "path": "blog/readme.md",
-  "mtime": 1486542227000
- },
- {
-  "path": "blog/未命名文件夹",
-  "mtime": 1486541458000,
-  "child": []
+  "mtime": 1486542237000
  }
 ]
