@@ -197,7 +197,7 @@ const getCatalogArticles = (path) => {
   let tagList = catalog.tagList;
   if (catalog) {
     return articleList.filter(o => o.tagList.length &&
-      o.tagList.every((tag, i) => tag == tagList[i]));
+      tagList.every((tag, i) => tag == o.tagList[i]));
   }
   return [];
 };
