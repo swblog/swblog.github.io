@@ -13,7 +13,7 @@ const pushGit = function (cmdList) {
   return new Promise(function(resolve){
       iterator(cmdList, function (item, next, list) {
         exec(item, (error, stdout, stderr) => {
-          if (error && os.platform() === 'win32') {
+          if (error && os.platform() === 'win32' && !/commit/.test(error)) {
             console.error(`exec error: ${error}`);
             return exec('start ./server/helper/update.sh', (error, stdout, stderr) => {
               if (error) {
