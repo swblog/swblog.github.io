@@ -14,6 +14,9 @@ const pushGit = function (cmdList) {
       iterator(cmdList, function (item, next, list) {
         exec(item, (error, stdout, stderr) => {
           if (error && os.platform() === 'win32' && !/commit/.test(error)) {
+            if(/pull/.test(error)){
+              return resolve();
+            }
             console.error(`exec error: ${error}`);
             return exec('start ./server/helper/update.sh', (error, stdout, stderr) => {
               if (error) {
