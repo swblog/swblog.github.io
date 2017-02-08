@@ -9,7 +9,7 @@
 4. 支持文章搜索甚至离线搜索
 
 ##示例
-1、本项目是一个示例：<a href="https://swblog.github.io/#!/index" target="_blank">https://swblog.github.io/#!/index</a>
+1、本项目是一个示例：<a href="https://swblog.github.io/" target="_blank">https://swblog.github.io/</a>
 
 项目地址：<a href="https://github.com/swblog/swblog.github.io" target="_blank">https://github.com/swblog/swblog.github.io</a>
 
@@ -24,8 +24,8 @@
 2. 安卓nodejs环境[http://nodejs.org](http://nodejs.org "nodejs.org. ")
 3. 通过Git Bash把your_name.github.io项目clone到本地
 4. 把文章内容写在markdown文件中,保存到`./blog`目录下, 支持多级目录，系统会自动根据目录生成文章的类别和标签。
-5. 在Git Bash命令行中执行`npm run update`。该命令会遍历`./blog`目录中的内容，生成`./json/article.json`文件，博客系统需要依赖该文件进行内容的展示。之后，该命令会执行git相关代码，把变更push到远程仓库。后面修改或添加文章后，只需执行该命令即可。
-
+5. 在Git Bash命令行中执行`npm run update`。该命令会遍历`./blog`目录中的内容，生成`./json/article.json`文件，博客系统需要依赖该文件进行内容的展示。之后，该命令会执行git相关代码，把变更push到远程仓库。后面使用中，修改或添加文章后，只需执行该命令即可。
+6. 系统配置文件是`./json/config.json`可以按需修改。配置文件的改动会在第二次访问后生效。
 
 ## 许可
 MIT

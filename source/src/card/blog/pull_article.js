@@ -52,7 +52,7 @@ module.exports = {
         count+'篇关于：'+keyWord);
       }
 
-      console.log(data);
+      //console.log(data);
     });
   }
 };
