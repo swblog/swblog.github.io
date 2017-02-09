@@ -89,11 +89,29 @@ var addToCache = function (dbName, req, response) {
       console.log(`[ServiceWorker] fetch failed (${ req.url }) and use cache`, error);
       return response;
     } else {
-      // Respond with a 400 "Bad Request" status.
-      console.log(`[ServiceWorker] fetch failed: ${ req.url }`, error);
-      return new Response(new Blob, {
-        'status': 400,
-        'statusText': 'Bad Request'
+      return caches.open(dbName).then(function(cache) {
+        //取旧缓存
+        let urlKey = req.url.replace(/\?[^?]+/,'');
+        return cache.keys().then(function(oldReqList){
+          let oldReq;
+          while(oldReq=oldReqList.pop()){
+            if(oldReq.url.indexOf(urlKey) > -1){
+              return cache.match(oldReq)
+            }
+          }
+          return null;
+        });
+      }).then(function(resp){
+        if(resp){
+          console.log(`[ServiceWorker] fetch failed (${ req.url }) and use old cache`, error);
+          return resp;
+        }
+        // Respond with a 400 "Bad Request" status.
+        console.log(`[ServiceWorker] fetch failed: ${ req.url }`, error);
+        return new Response(new Blob, {
+          'status': 400,
+          'statusText': 'Bad Request'
+        });
       });
     }
   });
@@ -182,16 +200,16 @@ var preloadList = function (msgObj) {
               caches.open(dbName).then(function (cache) {
                 //删除旧的博客文件
                 let urlKey = encodeURI(url.replace(/\?[^?]+/, ''));
-                cache.keys().then(function (oldRespList) {
-                  oldRespList.filter(oldResp => oldResp.url.indexOf(urlKey) > -1)
+                cache.keys().then(function (oldReqList) {
+                  oldReqList.filter(oldReq => oldReq.url.indexOf(urlKey) > -1)
                     .sort((a, b) => {
                       try {
                         return parseInt(b.url.substr(-13)) - parseInt(a.url.substr(-13));
                       } catch (e) {
                         return 0;
                       }
-                    }).slice(1).forEach(function (oldResp) {
-                      cache.delete(oldResp);
+                    }).slice(1).forEach(function (oldReq) {
+                      cache.delete(oldReq);
                     });
                 });
               });
@@ -234,11 +252,11 @@ function _processMessage(msgObj) {
     }
     return caches.open(namePrefix + 'markdown').then(function (cache) {
       //删除不存在的博客文件
-      cache.keys().then(function (oldRespList) {
-        oldRespList.forEach(oldResp => {
-          let urlKey = decodeURI(oldResp.url.replace(/\?[^?]+/, ''));
+      cache.keys().then(function (oldReqList) {
+        oldReqList.forEach(oldReq => {
+          let urlKey = decodeURI(oldReq.url.replace(/\?[^?]+/, ''));
           if (!articleDict[urlKey]) {
-            cache.delete(oldResp);
+            cache.delete(oldReq);
           }
         });
       });

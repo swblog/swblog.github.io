@@ -37,10 +37,10 @@ m_config.getConfig.then(() =>
           next();
         } else {
           let path = decodeURIComponent(key);
-          if (m_article.getCatalog(path)) {
+          if (m_article.hasCatalog(path)) {
             c_pageList(page, path);
             return next();
-          } else if (m_article.getArticle(path)) {
+          } else if (m_article.hasArticle(path)) {
             c_pageContent(page, path);
             return next();
           }

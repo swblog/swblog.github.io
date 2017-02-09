@@ -23,7 +23,7 @@ module.exports = function(page, key) {
       if(hasRender){
         return m_initOption.notRender(hasRender);
       }
-      if(m_article.getArticle(key)){
+      if(m_article.hasArticle(key)){
         m_article.getArticleContent(key).then((data)=>{
           page.setView({title: data.title});
           document.title = data.title;

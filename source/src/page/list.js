@@ -35,7 +35,7 @@ module.exports = function(page, key) {
             data.hrefHead = hrefHead;
             viewList.reset(data);
           });
-      }else if(m_article.getCatalog(key)){
+      }else if(m_article.hasCatalog(key)){
         m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
           data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
           data.hrefHead = hrefHead;

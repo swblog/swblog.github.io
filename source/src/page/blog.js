@@ -20,7 +20,7 @@ module.exports = function(page) {
         return m_initOption.notRender(hasRender);
       }
       let key = location.hash.replace('#!/', '');
-      if(m_article.getArticle(key)){
+      if(m_article.hasArticle(key)){
         m_article.getArticleContent(key).then((data)=>{
           page.setView({title: data.title});
           document.title = data.title;

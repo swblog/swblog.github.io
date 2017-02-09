@@ -85,10 +85,10 @@
 	          next();
 	        } else {
 	          var path = decodeURIComponent(key);
-	          if (m_article.getCatalog(path)) {
+	          if (m_article.hasCatalog(path)) {
 	            c_pageList(page, path);
 	            return next();
-	          } else if (m_article.getArticle(path)) {
+	          } else if (m_article.hasArticle(path)) {
 	            c_pageContent(page, path);
 	            return next();
 	          }
@@ -475,8 +475,8 @@
 	  var tagList = catalog.tagList;
 	  if (catalog) {
 	    return articleList.filter(function (o) {
-	      return o.tagList.length && o.tagList.every(function (tag, i) {
-	        return tag == tagList[i];
+	      return o.tagList.length && tagList.every(function (tag, i) {
+	        return tag == o.tagList[i];
 	      });
 	    });
 	  }
@@ -600,11 +600,11 @@
 	  initArticle: initArticle,
 	  catalogDict: catalogDict,
 	  articleDict: articleDict,
-	  getCatalog: function getCatalog(path) {
-	    return catalogDict[path];
+	  hasCatalog: function hasCatalog(path) {
+	    return !!catalogDict[path];
 	  },
-	  getArticle: function getArticle(path) {
-	    return articleDict[path];
+	  hasArticle: function hasArticle(path) {
+	    return !!articleDict[path];
 	  },
 	  getCatalogs: function getCatalogs() {
 	    return catalogList;
@@ -907,7 +907,7 @@
 	            viewList.reset(data);
 	          });
 	        })();
-	      } else if (m_article.getCatalog(key)) {
+	      } else if (m_article.hasCatalog(key)) {
 	        m_article.getListByCatalog(key, BCD.getHash(1)).then(function (data) {
 	          data.title = '"' + data.tag.replace(/^[^/]+\//, '') + '" 的最新文章';
 	          data.hrefHead = hrefHead;
@@ -1088,7 +1088,7 @@
 	      if (hasRender) {
 	        return m_initOption.notRender(hasRender);
 	      }
-	      if (m_article.getArticle(key)) {
+	      if (m_article.hasArticle(key)) {
 	        m_article.getArticleContent(key).then(function (data) {
 	          page.setView({ title: data.title });
 	          document.title = data.title;
@@ -1140,7 +1140,7 @@
 	        return m_initOption.notRender(hasRender);
 	      }
 	      var key = location.hash.replace('#!/', '');
-	      if (m_article.getArticle(key)) {
+	      if (m_article.hasArticle(key)) {
 	        m_article.getArticleContent(key).then(function (data) {
 	          page.setView({ title: data.title });
 	          document.title = data.title;
