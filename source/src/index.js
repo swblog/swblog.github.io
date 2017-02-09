@@ -14,36 +14,33 @@ const c_pageSearch = require('page/search.js');
 let viewHeader = c_header();
 $('body').append(viewHeader);
 
-m_config.getConfig(function(){
-  BCD.ajaxCache('./json/article.json', function(data) {
-    m_article.init(data);
-    //入口
-    BCD.app({
-      setTitle: function(str){
+m_config.getConfig.then(() =>
+  m_article.initArticle.then(() =>
+    BCD.app({ //入口
+      setTitle: function (str) {
         viewHeader.reset();
         document.title = str;
       },
-      initPage: function(key, next) {
-
+      initPage: function (key, next) {
         var page = this;
-        if(key=='index'){
+        if (key == 'index') {
           c_pageList(page, key);
           next();
-        }else if(key=='tag'){
+        } else if (key == 'tag') {
           c_pageList(page, key);
           next();
-        }else if(key=='blog'){
+        } else if (key == 'blog') {
           c_pageBlog(page);
           next();
-        }else if(key=='search'){
+        } else if (key == 'search') {
           c_pageSearch(page, key);
           next();
-        }else{
+        } else {
           let path = decodeURIComponent(key);
-          if(m_article.getCatalog(path)){
+          if (m_article.getCatalog(path)) {
             c_pageList(page, path);
             return next();
-          }else if(m_article.getArticle(path)){
+          } else if (m_article.getArticle(path)) {
             c_pageContent(page, path);
             return next();
           }
@@ -52,6 +49,6 @@ m_config.getConfig(function(){
           next(-1);
         }
       }
-    });
-  });
-})
+    })
+  )
+);

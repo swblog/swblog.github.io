@@ -1,7 +1,6 @@
 const m_util = require('common/util/index');
 const m_search = require('helper/search');
 const swPostMessage = require('helper/sw_post_message.js');
-let pathList = []; //路径列表
 let catalogList = []; //目录列表
 let articleList = []; //文件列表
 let originList = []; //原始文件结构列表
@@ -145,11 +144,24 @@ const init = (list) => {
     return b.mtime - a.mtime;
   });
   tagList = [...tagSet];
-  // swPostMessage({
-  //   m: 'preload',
-  //   list: articleList.map(getURL)
-  // }, preload);
 };
+
+let processCount = 0;
+//先用缓存，请求回来再更新
+const initArticle = new Promise((resolve)=>{
+  BCD.ajaxCache('./json/article.json', (data) => {
+    init(data);
+    processCount++;
+    if(processCount===2){
+      swPostMessage({
+        m: 'preload',
+        list: articleList.map(getURL)
+      }, preload);
+    }
+    resolve();
+    return 1; //缓存数据到localStorage
+  }, 0, 1E3, true);
+});
 
 //获取包含相关tag文章列表
 const getTagArticles = (tag) => {
@@ -306,7 +318,7 @@ const searchDirect = (word) => {
 
 
 module.exports = {
-  init,
+  initArticle,
   catalogDict,
   articleDict,
   getCatalog: (path) => catalogDict[path],

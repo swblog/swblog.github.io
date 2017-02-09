@@ -62,17 +62,14 @@
 	var viewHeader = c_header();
 	$('body').append(viewHeader);
 	
-	m_config.getConfig(function () {
-	  BCD.ajaxCache('./json/article.json', function (data) {
-	    m_article.init(data);
-	    //入口
-	    BCD.app({
+	m_config.getConfig.then(function () {
+	  return m_article.initArticle.then(function () {
+	    return BCD.app({ //入口
 	      setTitle: function setTitle(str) {
 	        viewHeader.reset();
 	        document.title = str;
 	      },
 	      initPage: function initPage(key, next) {
-	
 	        var page = this;
 	        if (key == 'index') {
 	          c_pageList(page, key);
@@ -232,7 +229,6 @@
 	var m_util = __webpack_require__(2);
 	var m_search = __webpack_require__(5);
 	var swPostMessage = __webpack_require__(6);
-	var pathList = []; //路径列表
 	var catalogList = []; //目录列表
 	var articleList = []; //文件列表
 	var originList = []; //原始文件结构列表
@@ -391,11 +387,24 @@
 	    return b.mtime - a.mtime;
 	  });
 	  tagList = [].concat(_toConsumableArray(tagSet));
-	  // swPostMessage({
-	  //   m: 'preload',
-	  //   list: articleList.map(getURL)
-	  // }, preload);
 	};
+	
+	var processCount = 0;
+	//先用缓存，请求回来再更新
+	var initArticle = new Promise(function (resolve) {
+	  BCD.ajaxCache('./json/article.json', function (data) {
+	    init(data);
+	    processCount++;
+	    if (processCount === 2) {
+	      swPostMessage({
+	        m: 'preload',
+	        list: articleList.map(getURL)
+	      }, preload);
+	    }
+	    resolve();
+	    return 1; //缓存数据到localStorage
+	  }, 0, 1E3, true);
+	});
 	
 	//获取包含相关tag文章列表
 	var getTagArticles = function getTagArticles(tag) {
@@ -578,7 +587,7 @@
 	};
 	
 	module.exports = {
-	  init: init,
+	  initArticle: initArticle,
 	  catalogDict: catalogDict,
 	  articleDict: articleDict,
 	  getCatalog: function getCatalog(path) {
@@ -713,8 +722,6 @@
 
 	"use strict";
 	
-	var isInit = false;
-	var callbackList = [];
 	var arr = location.host.split(".");
 	var isLocalhost = arr.length === 1;
 	var username = isLocalhost ? "swblog" : arr[0];
@@ -723,19 +730,18 @@
 	  "logoTitle": username + "的博客",
 	  "nav": [["Home", "#!/index"], ["About", "#!/blog/about.md"]]
 	};
+	
 	//先用缓存，请求回来再更新
-	BCD.ajaxCache('./json/config.json', function (data) {
-	  config = data || config;
-	  config.logoTitle = config.logoTitle || username + "的博客";
-	  isInit = true;
-	  var cb = void 0;
-	  while (cb = callbackList.pop()) {
-	    cb(config);
-	  }
-	  if (config.author) {
-	    return 1; //缓存数据到localStorage
-	  }
-	}, 0, 1E3, true);
+	var getConfig = new Promise(function (resolve) {
+	  BCD.ajaxCache('./json/config.json', function (data) {
+	    config = data || config;
+	    config.logoTitle = config.logoTitle || username + "的博客";
+	    resolve();
+	    if (config.author) {
+	      return 1; //缓存数据到localStorage
+	    }
+	  }, 0, 1E3, true);
+	});
 	
 	window.CONFIG = module.exports = {
 	  username: username,
@@ -746,13 +752,7 @@
 	  getConfigSync: function getConfigSync() {
 	    return config;
 	  },
-	  getConfig: function getConfig(callback) {
-	    if (isInit) {
-	      callback(config);
-	    } else {
-	      callbackList.push(callback);
-	    }
-	  }
+	  getConfig: getConfig
 	};
 
 /***/ },
@@ -1218,7 +1218,7 @@
 	        viewTips.html('在' + data.totalNum + '篇文章中搜索到' + count + '篇关于：' + keyWord);
 	      }
 	
-	      console.log(data);
+	      //console.log(data);
 	    });
 	  }
 	};
