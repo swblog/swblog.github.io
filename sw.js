@@ -174,31 +174,27 @@ var preloadList = function (msgObj) {
             if (response) {
               return response;
             } else {
-              return addToCache(dbName, myRequest).then(function(resp){
-                if (resp.status == 200) {
-                  caches.open(dbName).then(function(cache) {
-                    //删除旧的博客文件
-                    let urlKey = url.replace(/\?[^?]+/,'');
-                    cache.keys().then(function(oldRespList){
-                      oldRespList.filter(oldResp=>oldResp.url.indexOf(urlKey) > -1)
-                        .sort((a, b)=>{
-                          try{
-                            return parseInt(b.url.substr(-13)) - parseInt(a.url.substr(-13));
-                          }catch(e){
-                            return 0;
-                          }
-                        }).slice(1).forEach(function(oldResp){
-                          cache.delete(oldResp);
-                        });
-                    });
-                  });
-                }
-                return resp;
-              });
+              return addToCache(dbName, myRequest);
             }
           }).then(function (resp) {
             if (resp.status == 200) {
               retDict[url] = resp.text();
+              caches.open(dbName).then(function (cache) {
+                //删除旧的博客文件
+                let urlKey = encodeURI(url.replace(/\?[^?]+/, ''));
+                cache.keys().then(function (oldRespList) {
+                  oldRespList.filter(oldResp => oldResp.url.indexOf(urlKey) > -1)
+                    .sort((a, b) => {
+                      try {
+                        return parseInt(b.url.substr(-13)) - parseInt(a.url.substr(-13));
+                      } catch (e) {
+                        return 0;
+                      }
+                    }).slice(1).forEach(function (oldResp) {
+                      cache.delete(oldResp);
+                    });
+                });
+              });
             }
             if (list.length) {
               setTimeout(next, 10);
@@ -231,6 +227,22 @@ function _processMessage(msgObj) {
   switch (msgObj.m) {
   case 'preload':
     return preloadList(msgObj);
+  case 'delete_not_exist_article':
+    let articleDict = msgObj.dict;
+    if (!articleDict) {
+      return new Promise(function () {});
+    }
+    return caches.open(namePrefix + 'markdown').then(function (cache) {
+      //删除不存在的博客文件
+      cache.keys().then(function (oldRespList) {
+        oldRespList.forEach(oldResp => {
+          let urlKey = decodeURI(oldResp.url.replace(/\?[^?]+/, ''));
+          if (!articleDict[urlKey]) {
+            cache.delete(oldResp);
+          }
+        });
+      });
+    });
   default:
     return new Promise(function (resolve) {
       resolve({

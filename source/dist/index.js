@@ -396,10 +396,20 @@
 	    init(data);
 	    processCount++;
 	    if (processCount === 2) {
-	      swPostMessage({
-	        m: 'preload',
-	        list: articleList.map(getURL)
-	      }, preload);
+	      (function () {
+	        var existDict = {};
+	        articleList.forEach(function (o) {
+	          existDict[location.origin + '/' + o.path] = 1;
+	        });
+	        swPostMessage({
+	          m: 'delete_not_exist_article',
+	          dict: existDict
+	        });
+	        swPostMessage({
+	          m: 'preload',
+	          list: articleList.map(getURL)
+	        }, preload);
+	      })();
 	    }
 	    resolve();
 	    return 1; //缓存数据到localStorage

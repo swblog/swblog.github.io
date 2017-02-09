@@ -153,6 +153,14 @@ const initArticle = new Promise((resolve)=>{
     init(data);
     processCount++;
     if(processCount===2){
+      let existDict = {};
+      articleList.forEach(o=>{
+        existDict[location.origin + '/' + o.path] = 1;
+      })
+      swPostMessage({
+        m: 'delete_not_exist_article',
+        dict: existDict
+      });
       swPostMessage({
         m: 'preload',
         list: articleList.map(getURL)
