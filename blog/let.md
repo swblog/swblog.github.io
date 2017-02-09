@@ -1,7 +1,13 @@
-
 ```javascript
-{{{{
-  {let insane = 'Hello World'}
-  //console.log(insane); // 报错
-}}}};
+// IIFE 写法
+(function () {
+  var tmp = ...;
+  ...
+}());
+
+// 块级作用域写法
+{
+  let tmp = ...;
+  ...
+}
 ```
