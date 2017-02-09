@@ -18,31 +18,34 @@ module.exports = function(page, key) {
   viewBody.addView(viewPannelList);
 
   let viewFoot = c_footer();
+  let currentHash;
   page.setView({
     start: function(hasRender){
+      if(hasRender && currentHash==location.hash && BCD.history.getCode()==-1){
+        return m_initOption.notRender(hasRender);
+      }
+      currentHash=location.hash;
       viewList.empty();
-      let hrefHead = location.hash.replace(/\/\d*$/, '');
       if(key=='index'){
         m_article.getListByTag(0, BCD.getHash(1)).then((data)=>{
           data.title = "最新文章";
-          data.hrefHead = hrefHead;
+          data.hrefHead = '#!/index';
           viewList.reset(data);
         });
       }else if(key=='tag'){
         let tag = BCD.getHash(1);
           m_article.getListByTag(tag, BCD.getHash(2)).then((data)=>{
             data.title = '"'+tag+'" 的最新文章';
-            data.hrefHead = hrefHead;
+            data.hrefHead = '#!/tag/'+tag;
             viewList.reset(data);
           });
       }else if(m_article.hasCatalog(key)){
         m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
           data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
-          data.hrefHead = hrefHead;
+          data.hrefHead = '#!/'+BCD.getHash(0);
           viewList.reset(data);
         });
       }
-      return m_initOption.notRender(hasRender);
     },
     title: '文章列表',
     viewList: [viewBody, viewFoot]

@@ -1,4 +1,4 @@
-var version = 'v20';
+var version = 'v21';
 var namePrefix = 'swblog-';
 var nameReg = new RegExp('^' + namePrefix);
 var businessKey = 'business-' + version;

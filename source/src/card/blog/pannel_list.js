@@ -1,10 +1,11 @@
 const m_article = require('model/article');
+const m_readHistory = require('model/read_history');
 const c_pannel = require('card/blog/pannel');
 module.exports = (view) => {
-  let viewPannelLastPost = c_pannel({
+  let viewPannelRecommendPost = c_pannel({
     data: {
-      title: '最新文章',
-      list: m_article.getLastPost().map(o => {
+      title: '推荐阅读',
+      list: m_readHistory.getRecommend().map(o => {
         return {
           href: o.href,
           title: o.title,
@@ -33,6 +34,6 @@ module.exports = (view) => {
   });
 
   return view.setView({
-    viewList: [viewPannelLastPost, viewPannelCatalog, viewPannelTag]
+    viewList: [viewPannelCatalog, viewPannelTag, viewPannelRecommendPost]
   });
 }

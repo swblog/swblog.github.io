@@ -12,7 +12,11 @@ BCD.addEvent('mkview', function(ele, option, data) {
   let name = m_util.getRandomName();
   let result;
   if ('idx' in option) {
-    result = data.list[option.idx].summary;
+    let item = data.list[option.idx];
+    result = item.summary;
+    if(result.length < item.content.length) {
+      result += '...';
+    }
   } else {
     result = data.content;
   }
@@ -66,19 +70,35 @@ const getPath = (pathWithSearch) => pathWithSearch.replace(/\?[^?]+/, '');
 const getSortContent = (content, len=500) => {
   let minLen = len/2;
   let ret = content.substring(0, len);
+  let partCount = 0;
+  let partIndex = 0;
+  ret.replace(/\n|<br>|<\/p>/g,function($0, idx){
+    partCount++;
+    if(partCount==15){
+      partIndex = idx;
+    }
+  });
+  if(partIndex>0){
+    ret = ret.substring(0, partIndex);
+    if (ret.length < len*0.7){
+      return ret;
+    }
+  }
   let getContent = (str, reg) => {
     let arr = str.split(reg).filter(o => !!o);
     let count = 0;
     if (arr && arr.length > 2) {
       let idx = arr.length - 1;
-      arr.some((o, i) => {
+      if(arr.some((o, i) => {
         count += o.length;
         if (count > minLen && i > 1) {
           idx = i;
           return true;
         }
-      });
-      return str.substr(0, str.lastIndexOf(arr[idx])).replace(/[#\s]+$/, '') + '...';
+      })){
+        return str.substr(0, str.lastIndexOf(arr[idx])).replace(/[#\s]+$/, '');
+      }
+      return str;
     }
   }
   let con = getContent(ret, /\s*#+\s*/);
@@ -89,7 +109,7 @@ const getSortContent = (content, len=500) => {
   if (con) {
     return con;
   }
-  return content.length > 300 ? ret + '...' : content;
+  return ret;
 }
 
 const preload = (obj) => {
@@ -334,6 +354,7 @@ module.exports = {
   getCatalogs: () => catalogList,
   getTagArticles,
   getTags: () => tagList,
+  getArticleList: () => articleList,
   getLastPost: () => articleList.slice(0, 5),
   getListByCatalog: getList(getCatalogArticles),
   getListByTag: getList(getTagArticles),
