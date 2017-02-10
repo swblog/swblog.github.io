@@ -1191,13 +1191,12 @@
 	          (function () {
 	            slidebar = $.extend({}, data);
 	            var content = slidebar.content || '';
-	            var chapters = [];
+	            var chapters = slidebar.chapters = [];
 	
 	            slidebar.content = content.replace(/<%(([^>]|[^%]>)+)%>/g, function ($0, $1) {
 	              chapters.push($1);
 	              return '<a data-on="?m=replaceHash" data-url="#!/' + BCD.getHash(0) + '/' + $1 + '.md">' + $1 + '</a>';
 	            });
-	            slidebar.chapters = chapters;
 	            viewSlidebar.reset(slidebar);
 	            setTimeout(function () {
 	              viewSlidebar.bindEvent();
@@ -1210,7 +1209,7 @@
 	            viewContent.reset(data);
 	          });
 	        } else {
-	          return BCD.replaceHash('#!/' + BCD.getHash(0) + '/' + chapters[0] + '.md');
+	          return BCD.replaceHash('#!/' + BCD.getHash(0) + '/' + slidebar.chapters[0] + '.md');
 	        }
 	        // m_readHistory.addHistory(key);
 	        // page.setView({title: data.title});
