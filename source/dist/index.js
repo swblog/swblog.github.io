@@ -56,9 +56,10 @@
 	var m_config = __webpack_require__(7);
 	var c_header = __webpack_require__(8);
 	var c_pageList = __webpack_require__(9);
-	var c_pageContent = __webpack_require__(17);
-	var c_pageBlog = __webpack_require__(19);
-	var c_pageSearch = __webpack_require__(20);
+	var c_pageBook = __webpack_require__(17);
+	var c_pageContent = __webpack_require__(18);
+	var c_pageBlog = __webpack_require__(20);
+	var c_pageSearch = __webpack_require__(21);
 	var viewHeader = c_header();
 	$('body').append(viewHeader);
 	
@@ -86,7 +87,11 @@
 	        } else {
 	          var path = decodeURIComponent(key);
 	          if (m_article.hasCatalog(path)) {
-	            c_pageList(page, path);
+	            if (m_article.hasArticle(path + '/$sidebar$.md')) {
+	              c_pageBook(page, path);
+	            } else {
+	              c_pageList(page, path);
+	            }
 	            return next();
 	          } else if (m_article.hasArticle(path)) {
 	            c_pageContent(page, path);
@@ -398,7 +403,11 @@
 	        time: m_util.getTime(mtime),
 	        tagList: _tags
 	      };
-	      articleDict[path] = _item;
+	      if (articleDict[path]) {
+	        $.extend(articleDict[path], _item);
+	      } else {
+	        articleDict[path] = _item;
+	      }
 	      articleList.push(_item);
 	    }
 	  };
@@ -483,7 +492,7 @@
 	        list: list.map(function (o) {
 	          return articleDict[o.path];
 	        }).filter(function (o) {
-	          return !!o;
+	          return !!(o && o.content);
 	        })
 	      };
 	    });
@@ -1156,12 +1165,72 @@
 
 	'use strict';
 	
+	var c_footer = __webpack_require__(10);
+	var c_mainContainer = __webpack_require__(11);
+	var m_article = __webpack_require__(4);
+	var m_initOption = __webpack_require__(12);
+	var c_pannelList = __webpack_require__(13);
+	var c_articleList = __webpack_require__(16);
+	
+	module.exports = function (page, key) {
+	  var viewBody = c_mainContainer();
+	  var viewList = viewBody.find('[data-selector="main"]');
+	  var viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
+	  viewList.setView(c_articleList({
+	    delay: true
+	  }));
+	  viewBody.addView(viewList);
+	  //viewBody.addView(viewPannelList);
+	
+	  var viewFoot = c_footer();
+	  var currentHash = void 0;
+	  page.setView({
+	    start: function start(hasRender) {
+	      if (hasRender && currentHash == location.hash && BCD.history.getCode() == -1) {
+	        return m_initOption.notRender(hasRender);
+	      }
+	      currentHash = location.hash;
+	      viewList.empty();
+	      if (key == 'index') {
+	        m_article.getListByTag(0, BCD.getHash(1)).then(function (data) {
+	          data.title = "最新文章";
+	          data.hrefHead = '#!/index';
+	          viewList.reset(data);
+	        });
+	      } else if (key == 'tag') {
+	        (function () {
+	          var tag = BCD.getHash(1);
+	          m_article.getListByTag(tag, BCD.getHash(2)).then(function (data) {
+	            data.title = '"' + tag + '" 的最新文章';
+	            data.hrefHead = '#!/tag/' + tag;
+	            viewList.reset(data);
+	          });
+	        })();
+	      } else if (m_article.hasCatalog(key)) {
+	        m_article.getListByCatalog(key, BCD.getHash(1)).then(function (data) {
+	          data.title = '"' + data.tag.replace(/^[^/]+\//, '') + '" 的最新文章';
+	          data.hrefHead = '#!/' + BCD.getHash(0);
+	          viewList.reset(data);
+	        });
+	      }
+	    },
+	    title: '文章列表',
+	    viewList: [viewBody, viewFoot]
+	  });
+	};
+
+/***/ },
+/* 18 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
 	var m_article = __webpack_require__(4);
 	var m_readHistory = __webpack_require__(14);
 	var c_pannelList = __webpack_require__(13);
-	var c_content = __webpack_require__(18);
+	var c_content = __webpack_require__(19);
 	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page, key) {
@@ -1194,7 +1263,7 @@
 	};
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1209,7 +1278,7 @@
 	};
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1217,7 +1286,7 @@
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
 	var m_article = __webpack_require__(4);
-	var c_content = __webpack_require__(18);
+	var c_content = __webpack_require__(19);
 	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page) {
@@ -1247,7 +1316,7 @@
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1256,7 +1325,7 @@
 	var c_mainContainer = __webpack_require__(11);
 	var m_initOption = __webpack_require__(12);
 	var c_pannelList = __webpack_require__(13);
-	var m_pullArticle = __webpack_require__(21);
+	var m_pullArticle = __webpack_require__(22);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1285,7 +1354,7 @@
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

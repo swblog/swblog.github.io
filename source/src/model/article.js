@@ -155,7 +155,11 @@ const init = (list) => {
         time: m_util.getTime(mtime),
         tagList: tags
       };
-      articleDict[path] = item;
+      if(articleDict[path]){
+        $.extend(articleDict[path], item);
+      }else{
+        articleDict[path] = item;
+      }
       articleList.push(item);
     }
   };
@@ -227,7 +231,7 @@ const getList = (method) => (tag, page = 0, count = 10) => {
       page,
       count,
       num: totalList.length,
-      list: list.map(o => articleDict[o.path]).filter(o => !!o)
+      list: list.map(o => articleDict[o.path]).filter(o => !!(o&&o.content))
     };
   });
 };

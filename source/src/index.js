@@ -8,6 +8,7 @@ const m_article = require('model/article');
 const m_config = require('model/config');
 const c_header = require('card/common/navigator');
 const c_pageList = require('page/list.js');
+const c_pageBook = require('page/book.js');
 const c_pageContent = require('page/content.js');
 const c_pageBlog = require('page/blog.js');
 const c_pageSearch = require('page/search.js');
@@ -38,7 +39,11 @@ m_config.getConfig.then(() =>
         } else {
           let path = decodeURIComponent(key);
           if (m_article.hasCatalog(path)) {
-            c_pageList(page, path);
+            if(m_article.hasArticle(path + '/$sidebar$.md')){
+              c_pageBook(page, path);
+            }else{
+              c_pageList(page, path);
+            }
             return next();
           } else if (m_article.hasArticle(path)) {
             c_pageContent(page, path);
