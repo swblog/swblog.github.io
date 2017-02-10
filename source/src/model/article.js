@@ -350,6 +350,7 @@ const searchDirect = (word) => {
 
 
 module.exports = {
+  getName,
   initArticle,
   catalogDict,
   articleDict,

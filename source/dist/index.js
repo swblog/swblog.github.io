@@ -136,7 +136,7 @@
 	    m_util.stopBubble(e);
 	  });
 	};
-	BCD.addEvent('replaceHash', go);
+	BCD.addEvent('replaceHash', replaceHash);
 	//事件绑定
 	module.exports = {
 	  go: go,
@@ -626,6 +626,7 @@
 	};
 	
 	module.exports = {
+	  getName: getName,
 	  initArticle: initArticle,
 	  catalogDict: catalogDict,
 	  articleDict: articleDict,
@@ -1174,6 +1175,7 @@
 	  var viewContent = page.find('[data-selector="main"]');
 	  var viewSlidebar = page.find('[data-selector="slidebar"]');
 	  var slidebar = void 0;
+	  var currentHash = void 0;
 	  viewSlidebar.setView({
 	    name: 'blog/slidebar',
 	    template: '<div data-on="?m=mkview"></div>'
@@ -1185,7 +1187,12 @@
 	  });
 	
 	  page.setView({
-	    start: function start(hasRender) {
+	    title: m_article.getName(key),
+	    start: function start() {
+	      if (currentHash !== location.hash) {
+	        viewContent.empty();
+	        currentHash = location.hash;
+	      }
 	      m_article.getArticleContent(key + '/$sidebar$.md').then(function (data) {
 	        if (!slidebar) {
 	          (function () {
@@ -1211,16 +1218,7 @@
 	        } else {
 	          return BCD.replaceHash('#!/' + BCD.getHash(0) + '/' + slidebar.chapters[0] + '.md');
 	        }
-	        // m_readHistory.addHistory(key);
-	        // page.setView({title: data.title});
-	        // document.title = data.title;
-	        // viewContent.reset(data);
 	      });
-	      // m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
-	      //   data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
-	      //   data.hrefHead = '#!/'+BCD.getHash(0);
-	      //   viewList.reset(data);
-	      // });
 	    }
 	  });
 	};

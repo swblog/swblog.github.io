@@ -9,6 +9,7 @@ module.exports = function(page, key) {
   let viewContent = page.find('[data-selector="main"]');
   let viewSlidebar = page.find('[data-selector="slidebar"]');
   let slidebar;
+  let currentHash;
   viewSlidebar.setView({
     name: 'blog/slidebar',
     template: '<div data-on="?m=mkview"></div>'
@@ -21,7 +22,12 @@ module.exports = function(page, key) {
 
 
   page.setView({
-    start: function(hasRender){
+    title: m_article.getName(key),
+    start: function(){
+      if(currentHash!==location.hash){
+        viewContent.empty();
+        currentHash = location.hash;
+      }
       m_article.getArticleContent(key + '/$sidebar$.md').then((data)=>{
         if(!slidebar){
           slidebar = $.extend({}, data);
@@ -45,16 +51,7 @@ module.exports = function(page, key) {
         }else{
           return BCD.replaceHash('#!/'+BCD.getHash(0)+'/'+slidebar.chapters[0]+'.md');
         }
-        // m_readHistory.addHistory(key);
-        // page.setView({title: data.title});
-        // document.title = data.title;
-        // viewContent.reset(data);
       });
-      // m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
-      //   data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
-      //   data.hrefHead = '#!/'+BCD.getHash(0);
-      //   viewList.reset(data);
-      // });
     }
   })
 };

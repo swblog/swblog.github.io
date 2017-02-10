@@ -22,7 +22,7 @@ const replaceHash = (ele, option, data)=>{
     m_util.stopBubble(e);
   })
 };
-BCD.addEvent('replaceHash', go);
+BCD.addEvent('replaceHash', replaceHash);
 //事件绑定
 module.exports = {
   go,
