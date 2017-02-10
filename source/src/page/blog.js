@@ -1,7 +1,8 @@
+//针对导航的，没有侧边栏的内容展示
+
 const c_mainContainer = require('card/common/main_container');
 const c_footer = require('card/common/footer');
 const m_article = require('model/article');
-const c_content = require('card/blog/content');
 const m_initOption = require('helper/init_option');
 
 

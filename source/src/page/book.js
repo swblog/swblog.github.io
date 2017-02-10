@@ -1,53 +1,61 @@
-const c_footer = require('card/common/footer');
-const c_mainContainer = require('card/common/main_container');
+const s_mainContainer = require('card/common/slidebar_container');
 const m_article = require('model/article');
-const m_initOption = require('helper/init_option');
-const c_pannelList = require('card/blog/pannel_list');
 const c_articleList = require('card/blog/article_list');
 
 
 
 module.exports = function(page, key) {
-  let viewBody = c_mainContainer();
-  let viewList = viewBody.find('[data-selector="main"]');
-  let viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
-  viewList.setView(c_articleList({
-    delay: true
-  }));
-  viewBody.addView(viewList);
-  //viewBody.addView(viewPannelList);
+  page.html(s_mainContainer);
+  let viewContent = page.find('[data-selector="main"]');
+  let viewSlidebar = page.find('[data-selector="slidebar"]');
+  let slidebar;
+  viewSlidebar.setView({
+    name: 'blog/slidebar',
+    template: '<div data-on="?m=mkview" style="background-color: #ffffe8;"></div>'
+  });
 
-  let viewFoot = c_footer();
-  let currentHash;
+  viewContent.setView({
+    name: 'blog/blog',
+    template: '<div data-on="?m=mkview"></div>'
+  });
+
+
   page.setView({
     start: function(hasRender){
-      if(hasRender && currentHash==location.hash && BCD.history.getCode()==-1){
-        return m_initOption.notRender(hasRender);
-      }
-      currentHash=location.hash;
-      viewList.empty();
-      if(key=='index'){
-        m_article.getListByTag(0, BCD.getHash(1)).then((data)=>{
-          data.title = "最新文章";
-          data.hrefHead = '#!/index';
-          viewList.reset(data);
-        });
-      }else if(key=='tag'){
-        let tag = BCD.getHash(1);
-          m_article.getListByTag(tag, BCD.getHash(2)).then((data)=>{
-            data.title = '"'+tag+'" 的最新文章';
-            data.hrefHead = '#!/tag/'+tag;
-            viewList.reset(data);
+      m_article.getArticleContent(key + '/$sidebar$.md').then((data)=>{
+        if(!slidebar){
+          slidebar = $.extend({}, data);
+          let content = slidebar.content || '';
+          let chapters = [];
+
+          slidebar.content = content.replace(/<%(([^>]|[^%]>)+)%>/g,function($0, $1){
+            chapters.push($1);
+            return '<a data-on="?m=replaceHash" data-url="#!/'+BCD.getHash(0)+'/'+$1+'.md">'+$1+'</a>';
           });
-      }else if(m_article.hasCatalog(key)){
-        m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
-          data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
-          data.hrefHead = '#!/'+BCD.getHash(0);
-          viewList.reset(data);
-        });
-      }
-    },
-    title: '文章列表',
-    viewList: [viewBody, viewFoot]
+          slidebar.chapters = chapters;
+          viewSlidebar.reset(slidebar);
+          setTimeout(function(){
+            viewSlidebar.bindEvent();
+          });
+        }
+        let fileName = BCD.getHash(1);
+        if(fileName){
+          m_article.getArticleContent(key + '/' + fileName).then((data)=>{
+            viewContent.reset(data);
+          });
+        }else{
+          return BCD.replaceHash('#!/'+BCD.getHash(0)+'/'+chapters[0]+'.md');
+        }
+        // m_readHistory.addHistory(key);
+        // page.setView({title: data.title});
+        // document.title = data.title;
+        // viewContent.reset(data);
+      });
+      // m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
+      //   data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
+      //   data.hrefHead = '#!/'+BCD.getHash(0);
+      //   viewList.reset(data);
+      // });
+    }
   })
 };

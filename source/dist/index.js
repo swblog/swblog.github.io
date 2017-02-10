@@ -57,9 +57,9 @@
 	var c_header = __webpack_require__(8);
 	var c_pageList = __webpack_require__(9);
 	var c_pageBook = __webpack_require__(17);
-	var c_pageContent = __webpack_require__(18);
-	var c_pageBlog = __webpack_require__(20);
-	var c_pageSearch = __webpack_require__(21);
+	var c_pageContent = __webpack_require__(19);
+	var c_pageBlog = __webpack_require__(21);
+	var c_pageSearch = __webpack_require__(22);
 	var viewHeader = c_header();
 	$('body').append(viewHeader);
 	
@@ -1165,72 +1165,89 @@
 
 	'use strict';
 	
-	var c_footer = __webpack_require__(10);
-	var c_mainContainer = __webpack_require__(11);
+	var s_mainContainer = __webpack_require__(18);
 	var m_article = __webpack_require__(4);
-	var m_initOption = __webpack_require__(12);
-	var c_pannelList = __webpack_require__(13);
 	var c_articleList = __webpack_require__(16);
 	
 	module.exports = function (page, key) {
-	  var viewBody = c_mainContainer();
-	  var viewList = viewBody.find('[data-selector="main"]');
-	  var viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
-	  viewList.setView(c_articleList({
-	    delay: true
-	  }));
-	  viewBody.addView(viewList);
-	  //viewBody.addView(viewPannelList);
+	  page.html(s_mainContainer);
+	  var viewContent = page.find('[data-selector="main"]');
+	  var viewSlidebar = page.find('[data-selector="slidebar"]');
+	  var slidebar = void 0;
+	  viewSlidebar.setView({
+	    name: 'blog/slidebar',
+	    template: '<div data-on="?m=mkview" style="background-color: #ffffe8;"></div>'
+	  });
 	
-	  var viewFoot = c_footer();
-	  var currentHash = void 0;
+	  viewContent.setView({
+	    name: 'blog/blog',
+	    template: '<div data-on="?m=mkview"></div>'
+	  });
+	
 	  page.setView({
 	    start: function start(hasRender) {
-	      if (hasRender && currentHash == location.hash && BCD.history.getCode() == -1) {
-	        return m_initOption.notRender(hasRender);
-	      }
-	      currentHash = location.hash;
-	      viewList.empty();
-	      if (key == 'index') {
-	        m_article.getListByTag(0, BCD.getHash(1)).then(function (data) {
-	          data.title = "最新文章";
-	          data.hrefHead = '#!/index';
-	          viewList.reset(data);
-	        });
-	      } else if (key == 'tag') {
-	        (function () {
-	          var tag = BCD.getHash(1);
-	          m_article.getListByTag(tag, BCD.getHash(2)).then(function (data) {
-	            data.title = '"' + tag + '" 的最新文章';
-	            data.hrefHead = '#!/tag/' + tag;
-	            viewList.reset(data);
+	      m_article.getArticleContent(key + '/$sidebar$.md').then(function (data) {
+	        if (!slidebar) {
+	          (function () {
+	            slidebar = $.extend({}, data);
+	            var content = slidebar.content || '';
+	            var chapters = [];
+	
+	            slidebar.content = content.replace(/<%(([^>]|[^%]>)+)%>/g, function ($0, $1) {
+	              chapters.push($1);
+	              return '<a data-on="?m=replaceHash" data-url="#!/' + BCD.getHash(0) + '/' + $1 + '.md">' + $1 + '</a>';
+	            });
+	            slidebar.chapters = chapters;
+	            viewSlidebar.reset(slidebar);
+	            setTimeout(function () {
+	              viewSlidebar.bindEvent();
+	            });
+	          })();
+	        }
+	        var fileName = BCD.getHash(1);
+	        if (fileName) {
+	          m_article.getArticleContent(key + '/' + fileName).then(function (data) {
+	            viewContent.reset(data);
 	          });
-	        })();
-	      } else if (m_article.hasCatalog(key)) {
-	        m_article.getListByCatalog(key, BCD.getHash(1)).then(function (data) {
-	          data.title = '"' + data.tag.replace(/^[^/]+\//, '') + '" 的最新文章';
-	          data.hrefHead = '#!/' + BCD.getHash(0);
-	          viewList.reset(data);
-	        });
-	      }
-	    },
-	    title: '文章列表',
-	    viewList: [viewBody, viewFoot]
+	        } else {
+	          return BCD.replaceHash('#!/' + BCD.getHash(0) + '/' + chapters[0] + '.md');
+	        }
+	        // m_readHistory.addHistory(key);
+	        // page.setView({title: data.title});
+	        // document.title = data.title;
+	        // viewContent.reset(data);
+	      });
+	      // m_article.getListByCatalog(key, BCD.getHash(1)).then((data)=>{
+	      //   data.title = '"'+data.tag.replace(/^[^/]+\//, '')+'" 的最新文章';
+	      //   data.hrefHead = '#!/'+BCD.getHash(0);
+	      //   viewList.reset(data);
+	      // });
+	    }
 	  });
 	};
 
 /***/ },
 /* 18 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	module.exports = '  <div class="row">' + '    <div class="slidebar col-sm-5 col-md-4 col-lg-3" data-selector="slidebar"></div>' + '    <div class="col-sm-offset-5 col-md-offset-4 col-lg-offset-3 col-sm-7 col-md-8 col-lg-9" data-selector="main"></div>' + '  </div>';
+
+/***/ },
+/* 19 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
+	
+	//有侧边栏的内容展示
 	
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
 	var m_article = __webpack_require__(4);
 	var m_readHistory = __webpack_require__(14);
 	var c_pannelList = __webpack_require__(13);
-	var c_content = __webpack_require__(19);
+	var c_content = __webpack_require__(20);
 	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page, key) {
@@ -1263,7 +1280,7 @@
 	};
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1278,15 +1295,16 @@
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
+	//针对导航的，没有侧边栏的内容展示
+	
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
 	var m_article = __webpack_require__(4);
-	var c_content = __webpack_require__(19);
 	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page) {
@@ -1316,7 +1334,7 @@
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1325,7 +1343,7 @@
 	var c_mainContainer = __webpack_require__(11);
 	var m_initOption = __webpack_require__(12);
 	var c_pannelList = __webpack_require__(13);
-	var m_pullArticle = __webpack_require__(22);
+	var m_pullArticle = __webpack_require__(23);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1354,7 +1372,7 @@
 	};
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

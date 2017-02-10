@@ -1,3 +1,5 @@
+//有侧边栏的内容展示
+
 const c_mainContainer = require('card/common/main_container');
 const c_footer = require('card/common/footer');
 const m_article = require('model/article');

@@ -43,3 +43,11 @@ a.logo-link {
 [data-url]{
   cursor: pointer;
 }
+
+.slidebar{
+  position: fixed;
+  min-height: 100%;
+  border-right-color:rgb(187, 187, 187);
+  border-right-style:solid;
+  border-right-width:0.952381px;
+}
