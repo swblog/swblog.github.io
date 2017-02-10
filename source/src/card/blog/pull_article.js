@@ -20,7 +20,7 @@ viewRank.setView({
     '    </div>' +
     '  </div>' +
     '  <hr>' +
-    '  <div data-on="?m=mkview&idx=<%=i%>" style="background-color: #ffffe8;">' +
+    '  <div data-on="?m=mkview&idx=<%=i%>">' +
     '  </div><br />' +
     '  <p class="text-right">' +
     '    <a data-on="?m=go" data-url="<%=o.href%>">' +

@@ -1,7 +1,7 @@
 {
   "private": true,
-  "description": "Makedown server",
-  "name": "boke",
+  "description": "基于Service worker与单页面应用架构的博客系统",
+  "name": "swblog.github.io",
   "dependencies": {
     "gulp": "^3.9.1",
     "koa": "^1.2.4",
@@ -26,7 +26,7 @@
     "webpack": "^1.14.0",
     "webpack-stream": "^3.2.0"
   },
-  "version": "0.0.0",
+  "version": "0.0.1",
   "scripts": {
     "start": "gulp watch",
     "update": "node server/update-index.js"

@@ -16,7 +16,7 @@ module.exports = function (option) {
       '    </div>' +
       '  </div>' +
       '  <hr>' +
-      '  <div data-on="?m=mkview" style="background-color: #ffffe8;">' +
+      '  <div data-on="?m=mkview">' +
       '  </div><br />' +
       '  <hr>' +
       '</article>' +

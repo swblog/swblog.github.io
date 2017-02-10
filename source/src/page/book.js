@@ -11,7 +11,7 @@ module.exports = function(page, key) {
   let slidebar;
   viewSlidebar.setView({
     name: 'blog/slidebar',
-    template: '<div data-on="?m=mkview" style="background-color: #ffffe8;"></div>'
+    template: '<div data-on="?m=mkview"></div>'
   });
 
   viewContent.setView({
