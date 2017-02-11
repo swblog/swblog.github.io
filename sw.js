@@ -8,13 +8,11 @@ var expectedCaches = [
   businessCacheName, //业务代码  对于开发者常变，先用缓存，同时更新，下次进来再用新的。
   namePrefix + 'lib', //各种引用库的资源 不常变
   namePrefix + 'markdown', //文章资源 根据规则变
-  namePrefix + 'json' //配置资源 时效性强，直接用新的，如果拉取失败则用缓存资源。
 ];
 //正则匹配缓存文件
 var regDict = {
-  lib: /\.js$|\.css$|\.html$|\.woff$/,
-  markdown: /\.md$|\.md\?[^?]+$/,
-  json: /\.json$/
+  lib: /\.js$|\.css$|\.html$|\.woff|\.woff2$/,
+  markdown: /\.md$|\.md\?[^?]+$/
 };
 
 //安装文件
@@ -124,9 +122,7 @@ var fetchCache = function (key, req) {
     return cache.match(req.clone());
   }).then(function (response) {
     if (response) {
-      if (key == 'json') { //对于时效性强的文件，实时拉取
-        return addToCache(dbName, req, response);
-      } else if (key == businessKey) {
+      if (key == businessKey) {
         addToCache(dbName, req, response);
       }
       return response; //如果命中缓存，直接使用缓存

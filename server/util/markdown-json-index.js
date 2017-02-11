@@ -60,7 +60,7 @@ module.exports = function(path, callback){
   let runningPath = process.cwd()+'/';
   let indexJson = createIndex(path.replace(runningPath, ''));
   if(myGit){
-    reviseTime(indexJson, ()=>callback(indexJson));
+    //reviseTime(indexJson, ()=>callback(indexJson));
   }else{
     callback(indexJson);
   }
