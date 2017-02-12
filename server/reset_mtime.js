@@ -1,3 +1,4 @@
+const fs = require('fs');
 const exec = require('child_process').exec;
 let myGit = new Promise(function(resolve){
   try{
@@ -57,5 +58,12 @@ function structToList(obj){
   return list;
 }
 
-updateJSON();
-//console.log('article', structToList(article));
+//updateJSON();
+//
+let pathList = structToList(article);
+
+
+console.log('article', pathList);
+pathList.forEach(path=>{
+  fs.utimesSync(path, Date.now()/1000, Date.now()/1000);
+})
