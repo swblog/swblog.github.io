@@ -59,6 +59,6 @@ if (module.parent) {
   module.exports = updateJSON;
 } else {
   updateJSON(function () {
-    pushGit(['git commit -am "[update] article"', 'git push origin master']).then(() => console.log('已经push到远程git仓库'));
+    pushGit(['git add .', 'git commit -am "[update] article"', 'git push origin master']).then(() => console.log('已经push到远程git仓库'));
   });
 }
