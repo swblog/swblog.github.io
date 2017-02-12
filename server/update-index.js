@@ -10,7 +10,6 @@ const articleJson = './json/article.json';
 let oldArticlJsonList;
 if (fs.existsSync(articleJson)) {
   oldArticlJsonList = JSON.parse(fs.readFileSync(articleJson));
-  console.log('oldArticlJsonList', oldArticlJsonList)
 }
 
 
