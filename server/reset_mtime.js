@@ -41,4 +41,21 @@ let myGit = new Promise(function(resolve){
 
 
 let article = require('../json/article.json');
-console.log('article', article);
+
+const updateJSON = require('./update-index.js');
+
+function structToList(obj){
+  let list = [];
+  if(obj.length){
+    list.push.apply(list, obj.map(function(o){
+      if(o.child){
+        list.push.apply(list, structToList(o.child));
+      }
+      return o.path;
+    }));
+  }
+  return list;
+}
+
+updateJSON();
+//console.log('article', structToList(article));
