@@ -51,7 +51,15 @@ const updateJSON = (callback)=> pushGit(['git pull origin master', 'git add .', 
 if(module.parent){
   module.exports = updateJSON;
 }else{
-  updateJSON(function(){
-    //pushGit(['git commit -am "[update] article"', 'git push origin master']).then(()=>console.log('已经push到远程git仓库'));
-  });
+  fs.writeFile(articleJson,
+    JSON.stringify(getIndex('blog'), null, 1),
+    function (err) {
+      if (err) throw err;
+      console.log('文章索引更新成功', 'It\'s saved to '+articleJson+'!');
+      //if(callback)callback();
+    }
+  );
+  // updateJSON(function(){
+  //   //pushGit(['git commit -am "[update] article"', 'git push origin master']).then(()=>console.log('已经push到远程git仓库'));
+  // });
 }

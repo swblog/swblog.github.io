@@ -236,7 +236,6 @@
 	var swPostMessage = __webpack_require__(6);
 	var catalogList = []; //目录列表
 	var articleList = []; //文件列表
-	var originList = []; //原始文件结构列表
 	var tagList = [];
 	var articleDict = {};
 	var catalogDict = {};
@@ -367,7 +366,6 @@
 	};
 	
 	var init = function init(list) {
-	  originList = list;
 	  catalogList = []; //目录列表
 	  articleList = []; //文件列表
 	  var tagSet = new Set();
@@ -376,7 +374,7 @@
 	        path = _o$path === undefined ? '' : _o$path,
 	        mtime = o.mtime;
 	
-	    if (o.child) {
+	    if (o.isDirectory) {
 	      var tags = path.split('/').slice(1);
 	      tags.forEach(function (o) {
 	        return tagSet.add(o);
@@ -389,7 +387,6 @@
 	      };
 	      catalogDict[path] = item;
 	      catalogList.push(item);
-	      o.child.forEach(processArticle);
 	    } else {
 	      var _tags = path.split('/').slice(1, -1);
 	      _tags.forEach(function (o) {

@@ -3,7 +3,6 @@ const m_search = require('helper/search');
 const swPostMessage = require('helper/sw_post_message.js');
 let catalogList = []; //目录列表
 let articleList = []; //文件列表
-let originList = []; //原始文件结构列表
 let tagList = [];
 let articleDict = {};
 let catalogDict = {};
@@ -124,7 +123,6 @@ const preload = (obj) => {
 };
 
 const init = (list) => {
-  originList = list;
   catalogList = []; //目录列表
   articleList = []; //文件列表
   let tagSet = new Set();
@@ -132,7 +130,7 @@ const init = (list) => {
     let {
       path = '', mtime
     } = o;
-    if (o.child) {
+    if (o.isDirectory) {
       let tags = path.split('/').slice(1);
       tags.forEach(o => tagSet.add(o));
       let item = {
@@ -143,7 +141,6 @@ const init = (list) => {
       };
       catalogDict[path] = item;
       catalogList.push(item);
-      o.child.forEach(processArticle);
     } else {
       let tags = path.split('/').slice(1, -1);
       tags.forEach(o => tagSet.add(o));
