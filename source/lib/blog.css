@@ -44,6 +44,10 @@ a.logo-link {
   cursor: pointer;
 }
 .slidebar{
+	overflow-y: scroll;
+  top: 55px;
+  bottom: 0;
+	padding-bottom: 55px;
   position: fixed;
   min-height: 100%;
   border-right-color:rgb(187, 187, 187);
