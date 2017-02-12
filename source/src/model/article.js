@@ -228,7 +228,7 @@ const getList = (method) => (tag, page = 0, count = 10) => {
       page,
       count,
       num: totalList.length,
-      list: list.map(o => articleDict[o.path]).filter(o => !!(o&&o.content))
+      list: list.map(o => articleDict[o.path]).filter(o => !!(o && o.title!='$sidebar$' && o.content))
     };
   });
 };
@@ -291,9 +291,10 @@ const searchList = (word, callback) => {
   let fitList = [];
   let remainList = [];
   let ajaxList = [];
+  let totalList = articleList.filter(o=>o && o.title!='$sidebar$');
 
   const searchCallback = (list) => callback({
-    totalNum: articleList.length,
+    totalNum: totalList.length,
     checkNum: list.length,
     searchWord: word,
     list: list.filter(o => o.testType > 0).sort((a,b)=>b.searchWeight-a.searchWeight)
@@ -309,7 +310,7 @@ const searchList = (word, callback) => {
       }
     })
   };
-  articleList.forEach(o => {
+  totalList.forEach(o => {
     let item = articleDict[o.path];
     if (item) {
       let testObj = testItem(reg, item);

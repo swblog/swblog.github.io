@@ -490,7 +490,7 @@
 	        list: list.map(function (o) {
 	          return articleDict[o.path];
 	        }).filter(function (o) {
-	          return !!(o && o.content);
+	          return !!(o && o.title != '$sidebar$' && o.content);
 	        })
 	      };
 	    });
@@ -561,10 +561,13 @@
 	  var fitList = [];
 	  var remainList = [];
 	  var ajaxList = [];
+	  var totalList = articleList.filter(function (o) {
+	    return o && o.title != '$sidebar$';
+	  });
 	
 	  var searchCallback = function searchCallback(list) {
 	    return callback({
-	      totalNum: articleList.length,
+	      totalNum: totalList.length,
 	      checkNum: list.length,
 	      searchWord: word,
 	      list: list.filter(function (o) {
@@ -587,7 +590,7 @@
 	      }
 	    });
 	  };
-	  articleList.forEach(function (o) {
+	  totalList.forEach(function (o) {
 	    var item = articleDict[o.path];
 	    if (item) {
 	      var testObj = testItem(reg, item);

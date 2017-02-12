@@ -11,7 +11,7 @@ let oldArticlJsonList;
 if (fs.existsSync(articleJson)) {
   try{
     oldArticlJsonList = JSON.parse(fs.readFileSync(articleJson));
-  }catch(e){}  
+  }catch(e){}
 }
 
 
@@ -44,7 +44,7 @@ const pushGit = function (cmdList) {
 };
 
 const updateJSON = (callback) =>
-  pushGit(['git pull origin master', 'git add .', 'git commit -am "[update] article"']).then(() =>
+  pushGit(['git pull origin master', 'git add .', 'git commit -am "[update] article"']).then(() =>{
     resetMTime(oldArticlJsonList, function (data) {
       fs.writeFile(articleJson,
         JSON.stringify(data, null, 1),
@@ -54,11 +54,20 @@ const updateJSON = (callback) =>
           if (callback) callback();
         }
       );
-    }));
+    });
+  });
 
 
 if (module.parent) {
-  module.exports = updateJSON;
+  module.exports = function(){
+    fs.writeFile(articleJson,
+      JSON.stringify(getIndex('blog'), null, 1),
+      function (err) {
+        if (err) throw err;
+        console.log('文章索引更新成功', 'It\'s saved to ' + articleJson + '!');
+      }
+    );
+  };
 } else {
   updateJSON(function () {
     pushGit(['git add .', 'git commit -am "[update] article"', 'git push origin master']).then(() => console.log('已经push到远程git仓库'));
