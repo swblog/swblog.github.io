@@ -19,6 +19,7 @@ var regDict = {
 var FILES = [
   '/',
   '/index.html',
+  '/source/lib/bootstrap-custom/css/custom.bootstrap.css',
   '/source/lib/blog.css',
   '/source/lib/bcd.min.js',
   '/source/dist/index.js'

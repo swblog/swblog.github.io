@@ -1,9 +1,12 @@
 const gulp = require('gulp');
-const fs = require('fs');
+const less = require('gulp-less');
+const cssmin = require('gulp-minify-css');
 const open = require('gulp-open');
+const plumber = require('gulp-plumber');
+const fs = require('fs');
+const path = require('path');
 const updateJSON = require('./server/update-index.js');
 const os = require('os');
-const plumber = require('gulp-plumber');
 const webpack = require('webpack-stream');
 const webpackConfig = require('./source/webpack.config.js');
 const getServer = require('./server/app');
@@ -16,6 +19,15 @@ const articleJson = './json/article.json';
 //产生文章列表的接口文件
 gulp.task('gen', function() {
   updateJSON();
+});
+
+//生成定制主题
+gulp.task('less', function () {
+  return gulp.src('./source/less/custom.bootstrap.less')
+  .pipe(less({
+    paths: [ path.join(__dirname, 'less', 'includes') ]
+  })).pipe(cssmin())
+  .pipe(gulp.dest('./source/lib/bootstrap-custom/css'));
 });
 
 //本地服务
@@ -43,4 +55,5 @@ gulp.task('watch', function() {
     gulp.run(['dev', 'server']);
     gulp.watch(['source/src/**/*.js', 'source/src/**/*.css'], ['dev']);
     gulp.watch(['blog/**/**.md'], ['gen']);
+    gulp.watch(['source/less/**/**.less'], ['less']);
 });
