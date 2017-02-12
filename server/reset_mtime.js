@@ -20,9 +20,9 @@ let myGit = new Promise(function (resolve) {
 });
 
 
-function resetMTime(oldArticlJsonList, callback){
+function resetMTime(oldArticlJsonList, callback) {
   let oldArticlDict = {};
-  if(oldArticlJsonList){
+  if (oldArticlJsonList) {
     oldArticlJsonList.forEach(function (item) {
       oldArticlDict[item.path] = item.mtime;
     });
@@ -46,16 +46,16 @@ function resetMTime(oldArticlJsonList, callback){
           }
           let logLine = result && result.latest;
           if (logLine) {
-            console.log('item.mtime', item.mtime);
+            //console.log('item.mtime', item.mtime);
             item.mtime = new Date(logLine.date).getTime();
-            console.log('logLine.date', item.mtime);
+            //console.log('logLine.date', item.mtime);
             fs.utimesSync(item.path, item.mtime / 1000, item.mtime / 1000);
             //originItem.message = logLine.message;
           }
 
           if (arr.length === 0) {
             callback && callback(newArticleJsonList);
-          }else{
+          } else {
             next();
           }
         });
@@ -63,13 +63,13 @@ function resetMTime(oldArticlJsonList, callback){
       });
 
     });
-  }else{
+  } else {
     callback && callback(newArticleJsonList);
   }
 }
 
-if(module.parent){
+if (module.parent) {
   module.exports = resetMTime;
-}else{
+} else {
   resetMTime();
 }

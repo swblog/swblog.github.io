@@ -9,7 +9,9 @@ const resetMTime = require('./reset_mtime.js');
 const articleJson = './json/article.json';
 let oldArticlJsonList;
 if (fs.existsSync(articleJson)) {
-  oldArticlJsonList = JSON.parse(fs.readFileSync(articleJson));
+  try{
+    oldArticlJsonList = JSON.parse(fs.readFileSync(articleJson));
+  }catch(e){}  
 }
 
 
