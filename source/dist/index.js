@@ -426,6 +426,7 @@
 	    processCount++;
 	    if (processCount === 2) {
 	      (function () {
+	        //如果网络请求失败，这里不会被执行
 	        var existDict = {};
 	        articleList.forEach(function (o) {
 	          existDict[location.origin + '/' + o.path] = 1;
