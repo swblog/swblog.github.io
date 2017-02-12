@@ -176,7 +176,7 @@ const initArticle = new Promise((resolve)=>{
   BCD.ajaxCache('./json/article.json', (data) => {
     init(data);
     processCount++;
-    if(processCount===2){
+    if(processCount===2){ //如果网络请求失败，这里不会被执行
       let existDict = {};
       articleList.forEach(o=>{
         existDict[location.origin + '/' + o.path] = 1;
