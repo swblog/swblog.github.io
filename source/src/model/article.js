@@ -2,10 +2,15 @@ const m_util = require('common/util/index');
 const m_search = require('helper/search');
 const swPostMessage = require('helper/sw_post_message.js');
 let catalogList = []; //目录列表
-let articleList = []; //文件列表
-let tagList = [];
-let articleDict = {};
 let catalogDict = {};
+let articleList = []; //文件列表
+let articleDict = {};
+let sidebarList = []; //sidebar文件列表(sidebar文件也可以在articleDict中索引到)
+let bookList = [];    //书籍列表
+let bookDict = {};
+let tagList = [];
+const sidebarName = '$sidebar$';
+const getSidebarPath = (path)=> path+'/'+sidebarName+'.md';
 
 BCD.addEvent('mkview', function(ele, option, data) {
   let name = m_util.getRandomName();
@@ -111,6 +116,7 @@ const getSortContent = (content, len=500) => {
   return ret;
 }
 
+
 const preload = (obj) => {
   for (var pathWithSearch in obj) {
     var path = getPath(pathWithSearch);
@@ -125,6 +131,8 @@ const preload = (obj) => {
 const init = (list) => {
   catalogList = []; //目录列表
   articleList = []; //文件列表
+  sidebarList = [];
+  bookList = [];
   let tagSet = new Set();
   let processArticle = (o) => {
     let {
@@ -136,10 +144,9 @@ const init = (list) => {
       let item = {
         path,
         href: '#!/' + encodeURIComponent(o.path),
-        catalog: path.slice(path.lastIndexOf('/') + 1),
+        title: path.slice(path.lastIndexOf('/') + 1),
         tagList: tags
       };
-      catalogDict[path] = item;
       catalogList.push(item);
     } else {
       let tags = path.split('/').slice(1, -1);
@@ -161,6 +168,22 @@ const init = (list) => {
     }
   };
   list.forEach(processArticle);
+  articleList = articleList.filter(o=>{
+    if(o.title==sidebarName){
+      sidebarList.push(o);
+      return false;
+    }
+    return true;
+  });
+  catalogList = catalogList.filter(o=>{
+    if(articleDict[getSidebarPath(o.path)]){
+      bookDict[o.path] = o;
+      bookList.push(o);
+      return false;
+    }
+    catalogDict[path] = item;
+    return true;
+  });
   articleList = articleList.sort((a, b) => {
     return b.mtime - a.mtime;
   });
@@ -174,17 +197,19 @@ const initArticle = new Promise((resolve)=>{
     init(data);
     processCount++;
     if(processCount===2){ //如果网络请求失败，这里不会被执行
+      let totalList = sidebarList.concat(articleList);
       let existDict = {};
-      articleList.forEach(o=>{
+      totalList.forEach(o=>{
         existDict[location.origin + '/' + o.path] = 1;
-      })
+      });
+
       swPostMessage({
         m: 'delete_not_exist_article',
         dict: existDict
       });
       swPostMessage({
         m: 'preload',
-        list: articleList.map(getURL)
+        list: totalList.map(getURL)
       }, preload);
     }
     resolve();
@@ -228,7 +253,7 @@ const getList = (method) => (tag, page = 0, count = 10) => {
       page,
       count,
       num: totalList.length,
-      list: list.map(o => articleDict[o.path]).filter(o => !!(o && o.title!='$sidebar$' && o.content))
+      list: list.map(o => articleDict[o.path]).filter(o => !!(o && o.content))
     };
   });
 };
@@ -291,7 +316,7 @@ const searchList = (word, callback) => {
   let fitList = [];
   let remainList = [];
   let ajaxList = [];
-  let totalList = articleList.filter(o=>o && o.title!='$sidebar$');
+  let totalList = articleList.filter(o=>o);
 
   const searchCallback = (list) => callback({
     totalNum: totalList.length,
@@ -354,11 +379,13 @@ module.exports = {
   articleDict,
   hasCatalog: (path) => !!catalogDict[path],
   hasArticle: (path) => !!articleDict[path],
+  hasBook: (path) => !!bookDict[path],
   getCatalogs: () => catalogList,
+  getBooks: () => bookList,
   getTagArticles,
   getTags: () => tagList,
+  getSidebarPath,
   getArticleList: () => articleList,
-  getLastPost: () => articleList.slice(0, 5),
   getListByCatalog: getList(getCatalogArticles),
   getListByTag: getList(getTagArticles),
   getArticleContent: (path) => fetchContent([articleDict[path]])

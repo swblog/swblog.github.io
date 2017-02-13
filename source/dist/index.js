@@ -86,12 +86,11 @@
 	          next();
 	        } else {
 	          var path = decodeURIComponent(key);
-	          if (m_article.hasCatalog(path)) {
-	            if (m_article.hasArticle(path + '/$sidebar$.md')) {
-	              c_pageBook(page, path);
-	            } else {
-	              c_pageList(page, path);
-	            }
+	          if (m_article.hasBook(path)) {
+	            c_pageBook(page, path);
+	            return next();
+	          } else if (m_article.hasCatalog(path)) {
+	            c_pageList(page, path);
 	            return next();
 	          } else if (m_article.hasArticle(path)) {
 	            c_pageContent(page, path);
@@ -235,18 +234,25 @@
 	var m_search = __webpack_require__(5);
 	var swPostMessage = __webpack_require__(6);
 	var catalogList = []; //目录列表
-	var articleList = []; //文件列表
-	var tagList = [];
-	var articleDict = {};
 	var catalogDict = {};
+	var articleList = []; //文件列表
+	var articleDict = {};
+	var sidebarList = []; //sidebar文件列表(sidebar文件也可以在articleDict中索引到)
+	var bookList = []; //书籍列表
+	var bookDict = {};
+	var tagList = [];
+	var sidebarName = '$sidebar$';
+	var getSidebarPath = function getSidebarPath(path) {
+	  return path + '/' + sidebarName + '.md';
+	};
 	
 	BCD.addEvent('mkview', function (ele, option, data) {
 	  var name = m_util.getRandomName();
 	  var result = void 0;
 	  if ('idx' in option) {
-	    var item = data.list[option.idx];
-	    result = item.summary;
-	    if (result.length < item.content.length) {
+	    var _item = data.list[option.idx];
+	    result = _item.summary;
+	    if (result.length < _item.content.length) {
 	      result += '...';
 	    }
 	  } else {
@@ -368,6 +374,8 @@
 	var init = function init(list) {
 	  catalogList = []; //目录列表
 	  articleList = []; //文件列表
+	  sidebarList = [];
+	  bookList = [];
 	  var tagSet = new Set();
 	  var processArticle = function processArticle(o) {
 	    var _o$path = o.path,
@@ -379,20 +387,19 @@
 	      tags.forEach(function (o) {
 	        return tagSet.add(o);
 	      });
-	      var item = {
+	      var _item2 = {
 	        path: path,
 	        href: '#!/' + encodeURIComponent(o.path),
-	        catalog: path.slice(path.lastIndexOf('/') + 1),
+	        title: path.slice(path.lastIndexOf('/') + 1),
 	        tagList: tags
 	      };
-	      catalogDict[path] = item;
-	      catalogList.push(item);
+	      catalogList.push(_item2);
 	    } else {
 	      var _tags = path.split('/').slice(1, -1);
 	      _tags.forEach(function (o) {
 	        return tagSet.add(o);
 	      });
-	      var _item = {
+	      var _item3 = {
 	        path: path,
 	        mtime: mtime,
 	        href: '#!/' + encodeURIComponent(o.path),
@@ -401,14 +408,30 @@
 	        tagList: _tags
 	      };
 	      if (articleDict[path]) {
-	        $.extend(articleDict[path], _item);
+	        $.extend(articleDict[path], _item3);
 	      } else {
-	        articleDict[path] = _item;
+	        articleDict[path] = _item3;
 	      }
-	      articleList.push(_item);
+	      articleList.push(_item3);
 	    }
 	  };
 	  list.forEach(processArticle);
+	  articleList = articleList.filter(function (o) {
+	    if (o.title == sidebarName) {
+	      sidebarList.push(o);
+	      return false;
+	    }
+	    return true;
+	  });
+	  catalogList = catalogList.filter(function (o) {
+	    if (articleDict[getSidebarPath(o.path)]) {
+	      bookDict[o.path] = o;
+	      bookList.push(o);
+	      return false;
+	    }
+	    catalogDict[path] = item;
+	    return true;
+	  });
 	  articleList = articleList.sort(function (a, b) {
 	    return b.mtime - a.mtime;
 	  });
@@ -424,17 +447,19 @@
 	    if (processCount === 2) {
 	      (function () {
 	        //如果网络请求失败，这里不会被执行
+	        var totalList = sidebarList.concat(articleList);
 	        var existDict = {};
-	        articleList.forEach(function (o) {
+	        totalList.forEach(function (o) {
 	          existDict[location.origin + '/' + o.path] = 1;
 	        });
+	
 	        swPostMessage({
 	          m: 'delete_not_exist_article',
 	          dict: existDict
 	        });
 	        swPostMessage({
 	          m: 'preload',
-	          list: articleList.map(getURL)
+	          list: totalList.map(getURL)
 	        }, preload);
 	      })();
 	    }
@@ -490,7 +515,7 @@
 	        list: list.map(function (o) {
 	          return articleDict[o.path];
 	        }).filter(function (o) {
-	          return !!(o && o.title != '$sidebar$' && o.content);
+	          return !!(o && o.content);
 	        })
 	      };
 	    });
@@ -562,7 +587,7 @@
 	  var remainList = [];
 	  var ajaxList = [];
 	  var totalList = articleList.filter(function (o) {
-	    return o && o.title != '$sidebar$';
+	    return o;
 	  });
 	
 	  var searchCallback = function searchCallback(list) {
@@ -637,18 +662,22 @@
 	  hasArticle: function hasArticle(path) {
 	    return !!articleDict[path];
 	  },
+	  hasBook: function hasBook(path) {
+	    return !!bookDict[path];
+	  },
 	  getCatalogs: function getCatalogs() {
 	    return catalogList;
+	  },
+	  getBooks: function getBooks() {
+	    return bookList;
 	  },
 	  getTagArticles: getTagArticles,
 	  getTags: function getTags() {
 	    return tagList;
 	  },
+	  getSidebarPath: getSidebarPath,
 	  getArticleList: function getArticleList() {
 	    return articleList;
-	  },
-	  getLastPost: function getLastPost() {
-	    return articleList.slice(0, 5);
 	  },
 	  getListByCatalog: getList(getCatalogArticles),
 	  getListByTag: getList(getTagArticles),
@@ -1048,10 +1077,10 @@
 	var m_readHistory = __webpack_require__(14);
 	var c_pannel = __webpack_require__(15);
 	module.exports = function (view) {
-	  var viewPannelRecommendPost = c_pannel({
+	  var viewPannelBook = c_pannel({
 	    data: {
-	      title: '推荐阅读',
-	      list: m_readHistory.getRecommend().map(function (o) {
+	      title: '书籍',
+	      list: m_article.getBooks().map(function (o) {
 	        return {
 	          href: o.href,
 	          title: o.title,
@@ -1067,7 +1096,7 @@
 	        return o.tagList.length === 1;
 	      }).map(function (o) {
 	        return {
-	          title: o.catalog,
+	          title: o.title,
 	          href: o.href
 	        };
 	      })
@@ -1081,8 +1110,21 @@
 	    }
 	  });
 	
+	  var viewPannelRecommendPost = c_pannel({
+	    data: {
+	      title: '推荐阅读',
+	      list: m_readHistory.getRecommend().map(function (o) {
+	        return {
+	          href: o.href,
+	          title: o.title,
+	          time: o.time
+	        };
+	      })
+	    }
+	  });
+	
 	  return view.setView({
-	    viewList: [viewPannelCatalog, viewPannelTag, viewPannelRecommendPost]
+	    viewList: [viewPannelBook, viewPannelCatalog, viewPannelTag, viewPannelRecommendPost]
 	  });
 	};
 
@@ -1142,7 +1184,7 @@
 	  var view = $('<div class="panel panel-primary"></div>');
 	  option = $.extend({
 	    name: 'blog/panel',
-	    template: '<div class="panel-heading">' + '  <h4><%-obj.title%></h4>' + '</div>' + '<div class="panel-body">' + '  <%if(obj.isInline){%>' + '    <ul class="list-inline">' + '     <%(obj.list || []).forEach(function(o){%>' + '      <li><a data-on="?m=go" data-url="#!/tag/<%=o%>"><%=o%></a></li>' + '     <%})%>' + '    </ul>' + '  <%}else{%>' + '    <ul class="list-group">' + '     <%(obj.list || []).forEach(function(o){%>' + '      <li class="list-group-item"><a data-on="?m=go" data-url="<%=o.href%>"><%=o.title%></a>' + '       <%=o.time ? "<span style=\\\"color: #a2a34f;\\\">("+o.time+")</span>" : ""%></li>' + '     <%})%>' + '    </ul>' + '    <%}%>' + '</div>'
+	    template: '<%var list=obj.list || []; if(list.length===0){return "";}%><div class="panel-heading">' + '  <h4><%-obj.title%></h4>' + '</div>' + '<div class="panel-body">' + '  <%if(obj.isInline){%>' + '    <ul class="list-inline">' + '     <%(obj.list || []).forEach(function(o){%>' + '      <li><a data-on="?m=go" data-url="#!/tag/<%=o%>"><%=o%></a></li>' + '     <%})%>' + '    </ul>' + '  <%}else{%>' + '    <ul class="list-group">' + '     <%list.forEach(function(o){%>' + '      <li class="list-group-item"><a data-on="?m=go" data-url="<%=o.href%>"><%=o.title%></a>' + '       <%=o.time ? "<span style=\\\"color: #a2a34f;\\\">("+o.time+")</span>" : ""%></li>' + '     <%})%>' + '    </ul>' + '    <%}%>' + '</div>'
 	  }, option);
 	  return view.setView(option);
 	};
@@ -1194,7 +1236,7 @@
 	        viewContent.empty();
 	        currentHash = location.hash;
 	      }
-	      m_article.getArticleContent(key + '/$sidebar$.md').then(function (data) {
+	      m_article.getArticleContent(m_article.getSidebarPath(key)).then(function (data) {
 	        if (!slidebar) {
 	          (function () {
 	            slidebar = $.extend({}, data);

@@ -4,7 +4,7 @@ module.exports = function(option) {
   option = $.extend({
     name: 'blog/panel',
     template:
-      '<div class="panel-heading">' +
+      '<%var list=obj.list || []; if(list.length===0){return "";}%><div class="panel-heading">' +
       '  <h4><%-obj.title%></h4>' +
       '</div>' +
       '<div class="panel-body">' +
@@ -16,7 +16,7 @@ module.exports = function(option) {
       '    </ul>' +
       '  <%}else{%>' +
       '    <ul class="list-group">' +
-      '     <%(obj.list || []).forEach(function(o){%>' +
+      '     <%list.forEach(function(o){%>' +
       '      <li class="list-group-item"><a data-on="?m=go" data-url="<%=o.href%>"><%=o.title%></a>'+
       '       <%=o.time ? "<span style=\\\"color: #a2a34f;\\\">("+o.time+")</span>" : ""%></li>' +
       '     <%})%>'+

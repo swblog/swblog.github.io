@@ -28,7 +28,7 @@ module.exports = function(page, key) {
         viewContent.empty();
         currentHash = location.hash;
       }
-      m_article.getArticleContent(key + '/$sidebar$.md').then((data)=>{
+      m_article.getArticleContent(m_article.getSidebarPath(key)).then((data)=>{
         if(!slidebar){
           slidebar = $.extend({}, data);
           let content = slidebar.content || '';

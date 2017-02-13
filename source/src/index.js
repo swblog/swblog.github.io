@@ -38,12 +38,11 @@ m_config.getConfig.then(() =>
           next();
         } else {
           let path = decodeURIComponent(key);
-          if (m_article.hasCatalog(path)) {
-            if(m_article.hasArticle(path + '/$sidebar$.md')){
-              c_pageBook(page, path);
-            }else{
-              c_pageList(page, path);
-            }
+          if (m_article.hasBook(path)) {
+            c_pageBook(page, path);
+            return next();
+          }else if (m_article.hasCatalog(path)) {
+            c_pageList(page, path);
             return next();
           } else if (m_article.hasArticle(path)) {
             c_pageContent(page, path);
