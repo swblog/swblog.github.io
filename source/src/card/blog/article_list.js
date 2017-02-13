@@ -2,7 +2,7 @@
 module.exports = function(option) {
   return $.extend({
     name: 'blog/article_list',
-    template: '<h1><%=obj.title%></h1>' +
+    template: '<h3><%=obj.title%></h3>' +
       '<%if(!(obj.list && obj.list.length)){%>'+
       '<br><hr><center><h3>暂无内容</h3></center>'+
       '<%}else{(obj.list || []).forEach(function(o, idx){%><article>' +

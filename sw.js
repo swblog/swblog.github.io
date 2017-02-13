@@ -159,6 +159,10 @@ self.addEventListener('fetch', function (event) {
     }
   }
 
+  if(/\.jpg$|\.png$|\.gif$/.test(url)){
+    return; //这些资源如果不是https协议 下面那句会报错
+  }
+
   return event.respondWith(fetch(req));
 
 });

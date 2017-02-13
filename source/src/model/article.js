@@ -129,7 +129,7 @@ const preload = (obj) => {
       articleDict[path].summary = getSortContent(obj[pathWithSearch]);
     }
   }
-  console.log('articleDict', articleDict);
+  console.log('文章同步成功！可以离线使用');
 };
 
 const init = (list) => {
@@ -186,7 +186,7 @@ const init = (list) => {
       bookList.push(o);
       return false;
     }
-    catalogDict[path] = item;
+    catalogDict[o.path] = o;
     return true;
   });
   articleList = articleList.sort((a, b) => {
@@ -263,12 +263,23 @@ const getList = (method) => (tag, page = 0, count = 10) => {
   });
 };
 
+const getChildCatalog = (path) => {
+  let catalog = catalogDict[path];
+  if (catalog) {
+    let tagList = catalog.tagList;
+    let tagLength = tagList.length + 1;
+    return bookList.concat(catalogList).filter(o => o.tagList.length &&
+      tagList.every((tag, i) => o.tagList.length==tagLength && tag == o.tagList[i]));
+  }
+  return [];
+};
+
 const getCatalogArticles = (path) => {
   let catalog = catalogDict[path];
-  let tagList = catalog.tagList;
   if (catalog) {
+    let tagList = catalog.tagList;
     return articleList.filter(o => o.tagList.length &&
-      tagList.every((tag, i) => tag == o.tagList[i]));
+      tagList.every((tag, i) => tag == o.tagList[i])).sort((a, b)=>a.tagList.length - b.tagList.length);
   }
   return [];
 };
@@ -401,6 +412,7 @@ module.exports = {
   getSidebarPath,
   getArticleList: () => articleList,
   getListByCatalog: getList(getCatalogArticles),
+  getChildCatalog,
   getListByTag: getList(getTagArticles),
   getArticleContent: (path) => fetchContent([articleDict[path]])
     .then(() => articleDict[path]),
