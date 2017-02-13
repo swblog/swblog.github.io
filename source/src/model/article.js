@@ -71,14 +71,18 @@ const getURL = (o) => o.path + '?mtime=' + o.mtime;
 const getPath = (pathWithSearch) => pathWithSearch.replace(/\?[^?]+/, '');
 
 
-const getSortContent = (content, len=500) => {
+const getSortContent = (content, paragraph=10) => {
+  let len = 500;
   let minLen = len/2;
   let ret = content.substring(0, len);
   let partCount = 0;
   let partIndex = 0;
-  ret.replace(/\n|<br>|<\/p>/g,function($0, idx){
+  ret.replace(/([^\n]*)(\n|<br>|<\/p>)/g,function($0, $1, $2, idx){
     partCount++;
-    if(partCount==15){
+    if(partCount>	paragraph && $1.length>10 && partIndex===0){
+      partIndex = idx;
+    }
+    if(partCount==15 && partIndex===0){
       partIndex = idx;
     }
   });
@@ -143,6 +147,7 @@ const init = (list) => {
       tags.forEach(o => tagSet.add(o));
       let item = {
         path,
+        time: m_util.getTime(mtime),
         href: '#!/' + encodeURIComponent(o.path),
         title: path.slice(path.lastIndexOf('/') + 1),
         tagList: tags
@@ -272,10 +277,12 @@ const testItem = (reg, item) => {
   let testType = 0;
   let obj = {};
   let searchWeight = 0;
+  let weightDict = {};
   if (reg.test(item.title)) {
     obj.title = item.title.replace(reg, function($0) {
-      let weight = /\w/.test($0) ? 2 : $0.length;
-      searchWeight += weight * 3;
+      if(!weightDict[$0]){
+        weightDict[$0] = 2;
+      }
       return '<span class="text-danger">' + $0 + '</span>';
     });
     testType += 1;
@@ -283,8 +290,12 @@ const testItem = (reg, item) => {
   if (item.content && reg.test(item.content)) {
     let pointList = [];
     obj.content = item.content.replace(reg, function($0, point) {
+      if(!weightDict[$0]){
+        weightDict[$0] = 1;
+      }else if(weightDict[$0]==2){
+        weightDict[$0]++;
+      }
       let weight = /\w/.test($0) ? 2 : $0.length;
-      searchWeight += weight;
       pointList.push({
         point,
         weight
@@ -294,11 +305,11 @@ const testItem = (reg, item) => {
     pointList = pointList.sort((a, b) =>b.weight - a.weight);
     let start = pointList[0].point - 20;
     let summary = item.content.substr(start < 0 ? 0 : start);
-    start = summary.search(/[。\s]/);
+    start = summary.search(/[。\n\r]/);
     if (start < 20) {
-      summary = getSortContent(summary.substr(start).replace(/^[。\s]*/, ''), 100);
+      summary = getSortContent(summary.substr(start).replace(/^[。\s]*/, ''), 5);
     } else {
-      summary = getSortContent(summary.substr(10).replace(/^[。\s]*/, ''), 100);
+      summary = getSortContent(summary.substr(10).replace(/^[。\s]*/, ''), 5);
     }
     obj.summary = summary.replace(reg, function($0) {
       return '<span class="text-danger">' + $0 + '</span>';
@@ -306,6 +317,9 @@ const testItem = (reg, item) => {
     testType += 2;
   }
   obj.testType = testType;
+  for(var key in weightDict){
+    searchWeight += /\w/.test(key) ? weightDict[key] : key.length * weightDict[key];
+  }
   obj.searchWeight = searchWeight;
   return Object.assign({}, item, obj);
 };

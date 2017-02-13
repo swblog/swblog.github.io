@@ -16,7 +16,6 @@ BCD.addEvent('navigator_search', function(ele){
     '<%})%>'
   });
   let viewGroup = ele.find('.form-group');
-
   const getWord = ()=> viewInput.val().trim();
   const doSearch = ()=>{
     let hash = '#!/search/'+encodeURIComponent(getWord());
@@ -25,9 +24,13 @@ BCD.addEvent('navigator_search', function(ele){
     }else{
       BCD.go(hash);
     }
+    setTimeout(function(){
+      viewInput[0].focus(); //延时才能自动focus
+    }, 300);
   };
   ele.find('button').on('click', function(e){
     m_util.stopBubble(e);
+    let word = getWord();
     if(word){
       doSearch();
     }
@@ -38,9 +41,13 @@ BCD.addEvent('navigator_search', function(ele){
   viewInput.on('blur', function(){
     viewDrop.hide();
   });
-  ele.on('keypress input keyup', function(e){
+  ele.on('keyup', function(e){ //keypress要慢一拍 keypress input keyup
+    //console.log(e);
     let word = getWord();
     if(word){
+      if(e.keyCode==32){
+        return doSearch();
+      }
       let lis = viewDrop.find('a');
       if(e.keyCode==13){
         if(selectLi){
@@ -62,7 +69,7 @@ BCD.addEvent('navigator_search', function(ele){
         }
       }
 
-      if(word==oldWord){
+      if(word==oldWord){ //上下选择
         if(e.keyCode==40 || e.keyCode==38){
           lis.css('background-color','');
           selectLi = lis.eq(index);

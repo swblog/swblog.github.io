@@ -65,9 +65,18 @@
 	
 	m_config.getConfig.then(function () {
 	  return m_article.initArticle.then(function () {
-	    return BCD.app({ //入口
+	    viewHeader.reset();
+	    BCD.app({ //入口
 	      setTitle: function setTitle(str) {
-	        viewHeader.reset();
+	        //viewHeader.reset();
+	        var navLis = viewHeader.find('.nav li');
+	        navLis.removeClass('active');
+	        navLis.each(function (i, domLi) {
+	          var url = $($(domLi).find('a')[0]).attr('data-url') || '';
+	          if (location.hash.indexOf(url) === 0) {
+	            $(domLi).addClass('active');
+	          }
+	        });
 	        document.title = str;
 	      },
 	      initPage: function initPage(key, next) {
@@ -312,15 +321,19 @@
 	};
 	
 	var getSortContent = function getSortContent(content) {
-	  var len = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 500;
+	  var paragraph = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 10;
 	
+	  var len = 500;
 	  var minLen = len / 2;
 	  var ret = content.substring(0, len);
 	  var partCount = 0;
 	  var partIndex = 0;
-	  ret.replace(/\n|<br>|<\/p>/g, function ($0, idx) {
+	  ret.replace(/([^\n]*)(\n|<br>|<\/p>)/g, function ($0, $1, $2, idx) {
 	    partCount++;
-	    if (partCount == 15) {
+	    if (partCount > paragraph && $1.length > 10 && partIndex === 0) {
+	      partIndex = idx;
+	    }
+	    if (partCount == 15 && partIndex === 0) {
 	      partIndex = idx;
 	    }
 	  });
@@ -389,6 +402,7 @@
 	      });
 	      var _item2 = {
 	        path: path,
+	        time: m_util.getTime(mtime),
 	        href: '#!/' + encodeURIComponent(o.path),
 	        title: path.slice(path.lastIndexOf('/') + 1),
 	        tagList: tags
@@ -539,10 +553,12 @@
 	  var testType = 0;
 	  var obj = {};
 	  var searchWeight = 0;
+	  var weightDict = {};
 	  if (reg.test(item.title)) {
 	    obj.title = item.title.replace(reg, function ($0) {
-	      var weight = /\w/.test($0) ? 2 : $0.length;
-	      searchWeight += weight * 3;
+	      if (!weightDict[$0]) {
+	        weightDict[$0] = 2;
+	      }
 	      return '<span class="text-danger">' + $0 + '</span>';
 	    });
 	    testType += 1;
@@ -551,8 +567,12 @@
 	    (function () {
 	      var pointList = [];
 	      obj.content = item.content.replace(reg, function ($0, point) {
+	        if (!weightDict[$0]) {
+	          weightDict[$0] = 1;
+	        } else if (weightDict[$0] == 2) {
+	          weightDict[$0]++;
+	        }
 	        var weight = /\w/.test($0) ? 2 : $0.length;
-	        searchWeight += weight;
 	        pointList.push({
 	          point: point,
 	          weight: weight
@@ -564,11 +584,11 @@
 	      });
 	      var start = pointList[0].point - 20;
 	      var summary = item.content.substr(start < 0 ? 0 : start);
-	      start = summary.search(/[。\s]/);
+	      start = summary.search(/[。\n\r]/);
 	      if (start < 20) {
-	        summary = getSortContent(summary.substr(start).replace(/^[。\s]*/, ''), 100);
+	        summary = getSortContent(summary.substr(start).replace(/^[。\s]*/, ''), 5);
 	      } else {
-	        summary = getSortContent(summary.substr(10).replace(/^[。\s]*/, ''), 100);
+	        summary = getSortContent(summary.substr(10).replace(/^[。\s]*/, ''), 5);
 	      }
 	      obj.summary = summary.replace(reg, function ($0) {
 	        return '<span class="text-danger">' + $0 + '</span>';
@@ -577,6 +597,9 @@
 	    })();
 	  }
 	  obj.testType = testType;
+	  for (var key in weightDict) {
+	    searchWeight += /\w/.test(key) ? weightDict[key] : key.length * weightDict[key];
+	  }
 	  obj.searchWeight = searchWeight;
 	  return Object.assign({}, item, obj);
 	};
@@ -864,7 +887,6 @@
 	    template: '<%(obj||[]).forEach(function(o){%>' + '<li><a data-on="?m=go" data-url="<%=o.href%>"><%=o.title%></a></li>' + '<%})%>'
 	  });
 	  var viewGroup = ele.find('.form-group');
-	
 	  var getWord = function getWord() {
 	    return viewInput.val().trim();
 	  };
@@ -875,9 +897,13 @@
 	    } else {
 	      BCD.go(hash);
 	    }
+	    setTimeout(function () {
+	      viewInput[0].focus(); //延时才能自动focus
+	    }, 300);
 	  };
 	  ele.find('button').on('click', function (e) {
 	    m_util.stopBubble(e);
+	    var word = getWord();
 	    if (word) {
 	      doSearch();
 	    }
@@ -888,9 +914,14 @@
 	  viewInput.on('blur', function () {
 	    viewDrop.hide();
 	  });
-	  ele.on('keypress input keyup', function (e) {
+	  ele.on('keyup', function (e) {
+	    //keypress要慢一拍 keypress input keyup
+	    //console.log(e);
 	    var word = getWord();
 	    if (word) {
+	      if (e.keyCode == 32) {
+	        return doSearch();
+	      }
 	      var lis = viewDrop.find('a');
 	      if (e.keyCode == 13) {
 	        if (selectLi) {
@@ -913,6 +944,7 @@
 	      }
 	
 	      if (word == oldWord) {
+	        //上下选择
 	        if (e.keyCode == 40 || e.keyCode == 38) {
 	          lis.css('background-color', '');
 	          selectLi = lis.eq(index);
@@ -1402,8 +1434,9 @@
 	    start: function start(hasRender) {
 	      var word = decodeURIComponent(BCD.getHash(1));
 	      if (hasRender && oldWord == word) {
-	        return m_initOption.noRender(true);
+	        return m_initOption.notRender(true);
 	      }
+	      oldWord = word;
 	      m_pullArticle.init(word);
 	    },
 	    title: '搜索结果',

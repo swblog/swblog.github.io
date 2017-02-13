@@ -4,7 +4,7 @@ const m_initOption = require('helper/init_option');
 const c_pannelList = require('card/blog/pannel_list');
 const m_pullArticle = require('card/blog/pull_article');
 
-module.exports = function(page, key) {
+module.exports = function (page, key) {
   let viewBody = c_mainContainer();
   let viewList = viewBody.find('[data-selector="main"]');
   let viewPannelList = c_pannelList(viewBody.find('[data-selector="panel"]'));
@@ -18,11 +18,12 @@ module.exports = function(page, key) {
   let viewFoot = c_footer();
   let oldWord = '';
   page.setView({
-    start: function(hasRender){
-    let word = decodeURIComponent(BCD.getHash(1));
-      if(hasRender && oldWord==word){
-        return m_initOption.noRender(true);
+    start: function (hasRender) {
+      let word = decodeURIComponent(BCD.getHash(1));
+      if (hasRender && oldWord == word) {
+        return m_initOption.notRender(true);
       }
+      oldWord = word;
       m_pullArticle.init(word);
     },
     title: '搜索结果',
