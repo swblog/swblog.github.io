@@ -39,7 +39,7 @@ function resetMTime(oldArticlJsonList, callback) {
     myGit.then(function (git) {
       let currentGit = git('./');
       iterator(needToUpdate, function (item, next, arr) {
-        console.log(item.path);
+        console.log('reset mtime:', item.path);
         currentGit.log(['-1', item.path], (err, result) => {
           if (err) {
             console.log('建议使用Git Bash执行该命令');
