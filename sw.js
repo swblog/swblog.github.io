@@ -3,11 +3,13 @@ var namePrefix = 'swblog-';
 var nameReg = new RegExp('^' + namePrefix);
 var businessKey = 'business-' + version;
 var businessCacheName = namePrefix + businessKey;
+var imageCacheName = namePrefix + 'image';
 
 var expectedCaches = [
   businessCacheName, //业务代码  对于开发者常变，先用缓存，同时更新，下次进来再用新的。
   namePrefix + 'lib', //各种引用库的资源 不常变
   namePrefix + 'markdown', //文章资源 根据规则变
+  imageCacheName  //图片资源，由于没办法完全从链接判断是否为图片，回包后再判断是否缓存
 ];
 //正则匹配缓存文件
 var regDict = {
@@ -79,6 +81,9 @@ var addToCache = function (dbName, req, response) {
       throw new Error('response status is ' + resp.status);
     }
     var cacheResp = resp.clone();
+    if(dbName===imageCacheName && !/^image\//.test(resp.headers.get('content-type'))){
+      return resp;
+    }
     caches.open(dbName).then(function (cache) {
       cache.put(req.clone(), cacheResp);
     });
@@ -159,11 +164,11 @@ self.addEventListener('fetch', function (event) {
     }
   }
 
-  if(/\.jpg$|\.png$|\.gif$/.test(url)){
-    return; //这些资源如果不是https协议 下面那句会报错
+  if(requestURL.protocol!='https:' || /\.json$/.test(url)){
+    return;
   }
 
-  return event.respondWith(fetch(req));
+  return event.respondWith(fetchCache('image', req));
 
 });
 

@@ -1324,7 +1324,9 @@
 	        viewContent.empty();
 	        currentHash = location.hash;
 	      }
+	      this.show();
 	      m_article.getArticleContent(m_article.getSidebarPath(key)).then(function (data) {
+	        var baseHash = '#!/' + BCD.getHash(0);
 	        if (!slidebar) {
 	          (function () {
 	            slidebar = $.extend({}, data);
@@ -1332,8 +1334,18 @@
 	            var chapters = slidebar.chapters = [];
 	
 	            slidebar.content = content.replace(/<%(([^>]|[^%]>)+)%>/g, function ($0, $1) {
-	              chapters.push($1);
-	              return '<a data-on="?m=replaceHash" data-url="#!/' + BCD.getHash(0) + '/' + $1 + '.md">' + $1 + '</a>';
+	              var item = {};
+	              if (/^\[[^)]+\)$/.test($1)) {
+	                //这种格式：[描述](相对与当前目录的地址)
+	                var arr = $1.substr(1, $1.length - 2).split(/\]\s*\(/);
+	                item.title = arr[0] || '';
+	                item.href = baseHash + '/' + (arr[1] || '');
+	              } else {
+	                item.title = $1;
+	                item.href = baseHash + '/' + $1 + '.md';
+	              }
+	              chapters.push(item);
+	              return '<a data-on="?m=replaceHash" data-url="' + item.href + '">' + item.title + '</a>';
 	            });
 	            viewSlidebar.reset(slidebar);
 	            setTimeout(function () {
@@ -1341,13 +1353,13 @@
 	            });
 	          })();
 	        }
-	        var fileName = BCD.getHash(1);
+	        var fileName = location.hash.replace(baseHash, '');
 	        if (fileName) {
-	          m_article.getArticleContent(key + '/' + fileName).then(function (data) {
+	          m_article.getArticleContent(key + fileName).then(function (data) {
 	            viewContent.reset(data);
 	          });
 	        } else {
-	          return BCD.replaceHash('#!/' + BCD.getHash(0) + '/' + slidebar.chapters[0] + '.md');
+	          return BCD.replaceHash(slidebar.chapters[0].href);
 	        }
 	      });
 	    }
