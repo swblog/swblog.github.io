@@ -9,6 +9,8 @@ let sidebarList = []; //sidebar文件列表(sidebar文件也可以在articleDict
 let bookList = [];    //书籍列表
 let bookDict = {};
 let tagList = [];
+let startTime = Date.now();
+let isPreload = false;
 const sidebarName = '$sidebar$';
 const getSidebarPath = (path)=> path+'/'+sidebarName+'.md';
 
@@ -68,7 +70,7 @@ const getName = (path) => {
 
 const getURL = (o) => o.path + '?mtime=' + o.mtime;
 
-const getPath = (pathWithSearch) => pathWithSearch.replace(/\?[^?]+/, '');
+const getPath = (pathWithSearch) => decodeURIComponent(pathWithSearch.replace(location.origin+'/', '').replace(/\?[^?]+/, ''));
 
 
 const getSortContent = (content, paragraph=10) => {
@@ -124,12 +126,31 @@ const getSortContent = (content, paragraph=10) => {
 const preload = (obj) => {
   for (var pathWithSearch in obj) {
     var path = getPath(pathWithSearch);
-    if (articleDict[path]) {
-      articleDict[path].content = obj[pathWithSearch];
-      articleDict[path].summary = getSortContent(obj[pathWithSearch]);
+    let item;
+    if (item = articleDict[path]) {
+      item.content = obj[pathWithSearch];
+      item.tfList = m_search.getKeyWords(item.content);
+      item.summary = getSortContent(obj[pathWithSearch]);
     }
   }
-  console.log('文章同步成功！可以离线使用');
+  let totalList = sidebarList.concat(articleList);
+  let existDict = {};
+  totalList.forEach(o=>{
+    existDict[location.origin + '/' + o.path] = 1;
+  });
+
+  swPostMessage({
+    m: 'delete_not_exist_article',
+    dict: existDict
+  });
+  if(isPreload){
+    console.log('文章同步成功！可以离线使用');
+    return false;
+  }else{
+    isPreload = true;
+    console.log('本地文章加载成功');
+  }
+  return true;
 };
 
 const init = (list) => {
@@ -203,17 +224,8 @@ const initArticle = new Promise((resolve)=>{
     processCount++;
     if(processCount===2){ //如果网络请求失败，这里不会被执行
       let totalList = sidebarList.concat(articleList);
-      let existDict = {};
-      totalList.forEach(o=>{
-        existDict[location.origin + '/' + o.path] = 1;
-      });
-
       swPostMessage({
-        m: 'delete_not_exist_article',
-        dict: existDict
-      });
-      swPostMessage({
-        m: 'preload',
+        m: 'preloadAtricle',
         list: totalList.map(getURL)
       }, preload);
     }
@@ -237,6 +249,7 @@ const fetchContent = (list) => {
     success(str) {
       let item = Object.assign({}, o);
       item.content = str;
+      item.tfList = m_search.getKeyWords(str);
       item.summary = getSortContent(str);
       articleDict[o.path] = item;
     }
@@ -336,7 +349,7 @@ const testItem = (reg, item) => {
 };
 
 
-const searchList = (word, callback) => {
+const searchList = (word, callback, isCommend=false) => {
   let reg = m_search.getGlobalRegex(word);
   let fitList = [];
   let remainList = [];
@@ -373,7 +386,9 @@ const searchList = (word, callback) => {
       }
     }
   });
-
+  if(isCommend){
+    return callback(ajaxList.concat(fitList).filter(o => o.testType > 0).sort((a,b)=>b.searchWeight-a.searchWeight));
+  }
   searchCallback(fitList);
   batchProcess(ajaxList, function() {
     batchProcess(remainList);
@@ -399,18 +414,21 @@ const searchDirect = (word) => {
 
 module.exports = {
   getName,
+  isPreload,
+  startTime,
   initArticle,
   catalogDict,
   articleDict,
   hasCatalog: (path) => !!catalogDict[path],
   hasArticle: (path) => !!articleDict[path],
   hasBook: (path) => !!bookDict[path],
+  getCatalogMessage: (path)=> catalogDict[path],
   getCatalogs: () => catalogList,
   getBooks: () => bookList,
   getTagArticles,
   getTags: () => tagList,
   getSidebarPath,
-  getArticleList: () => articleList,
+  getArticleList: () => articleList.map(o=>articleDict[o.path]),
   getListByCatalog: getList(getCatalogArticles),
   getChildCatalog,
   getListByTag: getList(getTagArticles),

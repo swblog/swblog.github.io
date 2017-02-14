@@ -55,7 +55,7 @@ module.exports = function (page, key) {
             });
           }
           viewList.parent().prepend(viewTop);
-          console.log('getChildCatalog', key, m_article.getChildCatalog(key));
+          //console.log('getChildCatalog', key, m_article.getChildCatalog(key));
         } else if (viewTop) {
           viewTop.hide();
         }

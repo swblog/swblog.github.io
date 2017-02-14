@@ -56,10 +56,10 @@
 	var m_config = __webpack_require__(7);
 	var c_header = __webpack_require__(8);
 	var c_pageList = __webpack_require__(9);
-	var c_pageBook = __webpack_require__(17);
-	var c_pageContent = __webpack_require__(19);
-	var c_pageBlog = __webpack_require__(21);
-	var c_pageSearch = __webpack_require__(22);
+	var c_pageBook = __webpack_require__(18);
+	var c_pageContent = __webpack_require__(20);
+	var c_pageBlog = __webpack_require__(22);
+	var c_pageSearch = __webpack_require__(23);
 	var viewHeader = c_header();
 	$('body').append(viewHeader);
 	
@@ -252,6 +252,8 @@
 	var bookList = []; //书籍列表
 	var bookDict = {};
 	var tagList = [];
+	var startTime = Date.now();
+	var isPreload = false;
 	var sidebarName = '$sidebar$';
 	var getSidebarPath = function getSidebarPath(path) {
 	  return path + '/' + sidebarName + '.md';
@@ -319,7 +321,7 @@
 	};
 	
 	var getPath = function getPath(pathWithSearch) {
-	  return pathWithSearch.replace(/\?[^?]+/, '');
+	  return decodeURIComponent(pathWithSearch.replace(location.origin + '/', '').replace(/\?[^?]+/, ''));
 	};
 	
 	var getSortContent = function getSortContent(content) {
@@ -378,12 +380,31 @@
 	var preload = function preload(obj) {
 	  for (var pathWithSearch in obj) {
 	    var path = getPath(pathWithSearch);
-	    if (articleDict[path]) {
-	      articleDict[path].content = obj[pathWithSearch];
-	      articleDict[path].summary = getSortContent(obj[pathWithSearch]);
+	    var item = void 0;
+	    if (item = articleDict[path]) {
+	      item.content = obj[pathWithSearch];
+	      item.tfList = m_search.getKeyWords(item.content);
+	      item.summary = getSortContent(obj[pathWithSearch]);
 	    }
 	  }
-	  console.log('文章同步成功！可以离线使用');
+	  var totalList = sidebarList.concat(articleList);
+	  var existDict = {};
+	  totalList.forEach(function (o) {
+	    existDict[location.origin + '/' + o.path] = 1;
+	  });
+	
+	  swPostMessage({
+	    m: 'delete_not_exist_article',
+	    dict: existDict
+	  });
+	  if (isPreload) {
+	    console.log('文章同步成功！可以离线使用');
+	    return false;
+	  } else {
+	    isPreload = true;
+	    console.log('本地文章加载成功');
+	  }
+	  return true;
 	};
 	
 	var init = function init(list) {
@@ -461,23 +482,12 @@
 	    init(data);
 	    processCount++;
 	    if (processCount === 2) {
-	      (function () {
-	        //如果网络请求失败，这里不会被执行
-	        var totalList = sidebarList.concat(articleList);
-	        var existDict = {};
-	        totalList.forEach(function (o) {
-	          existDict[location.origin + '/' + o.path] = 1;
-	        });
-	
-	        swPostMessage({
-	          m: 'delete_not_exist_article',
-	          dict: existDict
-	        });
-	        swPostMessage({
-	          m: 'preload',
-	          list: totalList.map(getURL)
-	        }, preload);
-	      })();
+	      //如果网络请求失败，这里不会被执行
+	      var totalList = sidebarList.concat(articleList);
+	      swPostMessage({
+	        m: 'preloadAtricle',
+	        list: totalList.map(getURL)
+	      }, preload);
 	    }
 	    resolve();
 	    return 1; //缓存数据到localStorage
@@ -503,6 +513,7 @@
 	      success: function success(str) {
 	        var item = Object.assign({}, o);
 	        item.content = str;
+	        item.tfList = m_search.getKeyWords(str);
 	        item.summary = getSortContent(str);
 	        articleDict[o.path] = item;
 	      }
@@ -541,7 +552,7 @@
 	var getChildCatalog = function getChildCatalog(path) {
 	  var catalog = catalogDict[path];
 	  if (catalog) {
-	    var _ret3 = function () {
+	    var _ret2 = function () {
 	      var tagList = catalog.tagList;
 	      var tagLength = tagList.length + 1;
 	      return {
@@ -553,7 +564,7 @@
 	      };
 	    }();
 	
-	    if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
+	    if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
 	  }
 	  return [];
 	};
@@ -561,7 +572,7 @@
 	var getCatalogArticles = function getCatalogArticles(path) {
 	  var catalog = catalogDict[path];
 	  if (catalog) {
-	    var _ret4 = function () {
+	    var _ret3 = function () {
 	      var tagList = catalog.tagList;
 	      return {
 	        v: articleList.filter(function (o) {
@@ -574,7 +585,7 @@
 	      };
 	    }();
 	
-	    if ((typeof _ret4 === 'undefined' ? 'undefined' : _typeof(_ret4)) === "object") return _ret4.v;
+	    if ((typeof _ret3 === 'undefined' ? 'undefined' : _typeof(_ret3)) === "object") return _ret3.v;
 	  }
 	  return [];
 	};
@@ -635,6 +646,8 @@
 	};
 	
 	var searchList = function searchList(word, callback) {
+	  var isCommend = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
+	
 	  var reg = m_search.getGlobalRegex(word);
 	  var fitList = [];
 	  var remainList = [];
@@ -681,7 +694,13 @@
 	      }
 	    }
 	  });
-	
+	  if (isCommend) {
+	    return callback(ajaxList.concat(fitList).filter(function (o) {
+	      return o.testType > 0;
+	    }).sort(function (a, b) {
+	      return b.searchWeight - a.searchWeight;
+	    }));
+	  }
 	  searchCallback(fitList);
 	  batchProcess(ajaxList, function () {
 	    batchProcess(remainList);
@@ -706,6 +725,8 @@
 	
 	module.exports = {
 	  getName: getName,
+	  isPreload: isPreload,
+	  startTime: startTime,
 	  initArticle: initArticle,
 	  catalogDict: catalogDict,
 	  articleDict: articleDict,
@@ -717,6 +738,9 @@
 	  },
 	  hasBook: function hasBook(path) {
 	    return !!bookDict[path];
+	  },
+	  getCatalogMessage: function getCatalogMessage(path) {
+	    return catalogDict[path];
 	  },
 	  getCatalogs: function getCatalogs() {
 	    return catalogList;
@@ -730,7 +754,9 @@
 	  },
 	  getSidebarPath: getSidebarPath,
 	  getArticleList: function getArticleList() {
-	    return articleList;
+	    return articleList.map(function (o) {
+	      return articleDict[o.path];
+	    });
 	  },
 	  getListByCatalog: getList(getCatalogArticles),
 	  getChildCatalog: getChildCatalog,
@@ -750,6 +776,8 @@
 
 	'use strict';
 	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
 	var createNGram = function createNGram(n) {
 	  return function (str) {
 	    var arr = [];
@@ -767,7 +795,9 @@
 	  2: createNGram(2)
 	};
 	
-	var getWordList = function getWordList(str) {
+	var getWordList = function getWordList() {
+	  var str = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	
 	  var wordList = [str];
 	  var processStrict = function processStrict(str) {
 	    return str.replace(/['‘’][^'‘’]*['‘’]|["”“][^"”“]*["”“]/g, function ($0) {
@@ -789,19 +819,103 @@
 	  };
 	
 	  var processEnglish = function processEnglish(str) {
-	    wordList.push.apply(wordList, str.split(/\s+/).filter(function (o) {
-	      return !!o;
+	    wordList.push.apply(wordList, str.split(/[^a-zA-Z]/).filter(function (o) {
+	      return o.length > 2;
+	    }).map(function (o) {
+	      return o.toLowerCase();
 	    }));
 	  };
 	
 	  processEnglish(processChiese(processStrict(str)));
+	  //console.log('search RegExp', new RegExp(wordList.join('|'), 'ig'));
 	  return wordList;
+	};
+	
+	var removeStopWord = function removeStopWord(str) {
+	  str = str.replace(/<[^\u4e00-\u9fff\uf900-\ufaff>]+>|\([^\u4e00-\u9fff\uf900-\ufaff)]+\)|\w+[:@][\w.?#=&\/]+/g, ' ');
+	  str = str.replace(/怎么|的|是|开始|很多|我|觉得|非常|可以|一|了|上面|下面|这|那|哪|个|this|return|with/g, ' ');
+	  str = str.replace(/[^\u4e00-\u9fff\uf900-\ufaff\w]/g, ' '); //非中文或英文，替换成空格
+	  return str;
+	};
+	
+	var getKeyWords = function getKeyWords() {
+	  var str = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
+	
+	  var wordList = getWordList(removeStopWord(str)).slice(1);
+	  var threeDict = {};
+	  var fourDict = {};
+	  var tfDict = {};
+	  var tfList = [];
+	
+	  wordList.forEach(function (o) {
+	    if (o.length < 2) {
+	      return;
+	    }
+	    if (tfDict[o]) {
+	      tfDict[o]++;
+	    } else {
+	      if (o.length == 3) {
+	        threeDict[o] = 1;
+	      }
+	      if (o.length == 4) {
+	        fourDict[o] = 1;
+	      }
+	      tfDict[o] = 1;
+	    }
+	  });
+	  var token;
+	  //去掉非词
+	
+	  var _loop = function _loop() {
+	    var frequency = tfDict[token];
+	    gramDict[3](token).forEach(function (o) {
+	      if (frequency === tfDict[o]) {
+	        delete tfDict[o];
+	        delete threeDict[o];
+	        gramDict[2](o).forEach(function (item) {
+	          if (frequency === tfDict[item]) {
+	            delete tfDict[item];
+	          }
+	        });
+	      }
+	    });
+	  };
+	
+	  for (token in fourDict) {
+	    _loop();
+	  }
+	
+	  var _loop2 = function _loop2() {
+	    var frequency = tfDict[token];
+	    gramDict[2](token).forEach(function (o) {
+	      if (frequency === tfDict[o]) {
+	        delete tfDict[o];
+	      }
+	    });
+	  };
+	
+	  for (token in threeDict) {
+	    _loop2();
+	  }
+	
+	  for (token in tfDict) {
+	    tfList.push({
+	      token: token,
+	      frequency: tfDict[token]
+	    });
+	  }
+	  return tfList.sort(function (a, b) {
+	    return b.frequency - a.frequency;
+	  }); //.slice(0,10).map(o=>o.token);
 	};
 	
 	module.exports = {
 	  getWordList: getWordList,
+	  getKeyWords: getKeyWords,
 	  getGlobalRegex: function getGlobalRegex(str) {
-	    return new RegExp(getWordList(str).join('|'), 'ig');
+	    var wordSet = new Set(getWordList(str));
+	    var wordList = [].concat(_toConsumableArray(wordSet));
+	    return new RegExp(wordList.join('|'), 'ig');
 	  }
 	};
 
@@ -824,8 +938,9 @@
 	        resp = _event$data.resp;
 	
 	    if (cbid && callbackDict[cbid]) {
-	      callbackDict[cbid](resp);
-	      delete callbackDict[cbid];
+	      if (!callbackDict[cbid](resp)) {
+	        delete callbackDict[cbid];
+	      }
 	    }
 	  }); //页面通过监听service worker的message事件接收service worker的信息
 	  postMessage = function postMessage(req, callback) {
@@ -1021,7 +1136,7 @@
 	var m_initOption = __webpack_require__(12);
 	var c_pannel = __webpack_require__(13);
 	var c_pannelList = __webpack_require__(14);
-	var c_articleList = __webpack_require__(16);
+	var c_articleList = __webpack_require__(17);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1072,7 +1187,7 @@
 	            });
 	          }
 	          viewList.parent().prepend(viewTop);
-	          console.log('getChildCatalog', key, m_article.getChildCatalog(key));
+	          //console.log('getChildCatalog', key, m_article.getChildCatalog(key));
 	        } else if (viewTop) {
 	          viewTop.hide();
 	        }
@@ -1178,7 +1293,7 @@
 	'use strict';
 	
 	var m_article = __webpack_require__(4);
-	var m_readHistory = __webpack_require__(15);
+	var m_recommend = __webpack_require__(15);
 	var c_pannel = __webpack_require__(13);
 	module.exports = function (view) {
 	  var viewPannelBook = c_pannel({
@@ -1215,16 +1330,19 @@
 	  });
 	
 	  var viewPannelRecommendPost = c_pannel({
-	    data: {
+	    delay: true
+	  });
+	  m_recommend.getRecommend(function (list) {
+	    viewPannelRecommendPost.reset({
 	      title: '推荐阅读',
-	      list: m_readHistory.getRecommend().map(function (o) {
+	      list: list.map(function (o) {
 	        return {
 	          href: o.href,
 	          title: o.title,
 	          time: o.time
 	        };
 	      })
-	    }
+	    });
 	  });
 	
 	  return view.setView({
@@ -1234,6 +1352,161 @@
 
 /***/ },
 /* 15 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+	
+	var m_article = __webpack_require__(4);
+	var m_search = __webpack_require__(5);
+	var m_readHistory = __webpack_require__(16);
+	
+	var filter = function filter(list) {
+	  var arr = [];
+	  var itemSet = new Set(list);
+	  var uniqList = [].concat(_toConsumableArray(itemSet));
+	  var currentPath = decodeURIComponent(location.hash.replace('#!/', ''));
+	  uniqList.some(function (o) {
+	    if (!m_readHistory.hasRead(o.path) && o.path != currentPath) {
+	      arr.push(o);
+	      if (arr.length > 10) {
+	        return true;
+	      }
+	    }
+	  });
+	  return arr;
+	};
+	
+	var getCorrelation = function getCorrelation(a_tfList) {
+	  var tfDict = {};
+	  a_tfList.forEach(function (o) {
+	    tfDict[o.token] = o.frequency;
+	  });
+	  return function (b_tfList) {
+	    var total = b_tfList.reduce(function (sum, item) {
+	      return sum += item.frequency;
+	    }, 0);
+	    return b_tfList.reduce(function (weight, item) {
+	      weight += (tfDict[item.token] || 0) * item.frequency / total;
+	      return weight;
+	    }, 0);
+	  };
+	};
+	
+	var getSimilarArticles = function getSimilarArticles(a_tfList) {
+	  var list = m_article.getArticleList().filter(function (o) {
+	    return o.tfList && o.tfList.length;
+	  });
+	  var calModel = getCorrelation(a_tfList);
+	  var weightList = list.map(function (o) {
+	    return {
+	      article: o,
+	      weight: calModel(o.tfList)
+	    };
+	  }).sort(function (a, b) {
+	    return b.weight - a.weight;
+	  });
+	  console.table(weightList.slice(0, 20).map(function (o) {
+	    return { title: o.article.title, weight: o.weight };
+	  }));
+	  return weightList.map(function (o) {
+	    return o.article;
+	  });
+	};
+	
+	var getMutiSamples = function getMutiSamples() {
+	  var tagDict = {};
+	  var retList = [];
+	  var list = m_article.getArticleList().filter(function (o) {
+	    return !m_readHistory.hasRead(o.path);
+	  });
+	  if (list.some(function (o) {
+	    var tagList = o.tagList || [];
+	    var tagName = tagList[tagList.length - 1];
+	    if (tagDict[tagName]) {
+	      tagDict[tagName].push(o);
+	    } else {
+	      tagDict[tagName] = [];
+	      retList.push(o);
+	    }
+	    if (retList.length == 10) {
+	      return true;
+	    }
+	  })) {
+	    return retList;
+	  } else {
+	    var tagList = Object.keys(tagDict);
+	    outer: for (var i = 0; i < 10; i++) {
+	      for (var j = 0; j < tagList.length; j++) {
+	        var item = void 0;
+	        var tagName = tagList[j];
+	        if (item = tagDict[tagName][i]) {
+	          retList.push(item);
+	          if (retList.length == 10) {
+	            break outer;
+	          }
+	        }
+	      }
+	      return retList;
+	    }
+	  }
+	};
+	
+	var getRecommend = function getRecommend(callback) {
+	  var key = decodeURIComponent(BCD.getHash(0));
+	  var articleList = m_article.getArticleList();
+	  var delayTime = 2E3 - (Date.now() - m_article.startTime);
+	  delayTime = m_article.isPreload ? 0 : delayTime < 0 ? 0 : delayTime;
+	
+	  (function () {
+	    switch (true) {
+	      case key == 'tag':
+	        var word = decodeURIComponent(BCD.getHash(1));
+	        setTimeout(function () {
+	          m_article.searchList(word, function (list) {
+	            callback(filter(list.concat(articleList)));
+	          }, true);
+	        }, delayTime);
+	        break;
+	      case m_article.hasArticle(key):
+	        setTimeout(function () {
+	          m_article.getArticleContent(key).then(function (data) {
+	            var tagList = data.tagList;
+	            var keyWords = (data.tfList || []).slice(0, 10).map(function (o) {
+	              return o.token;
+	            });
+	            console.log('本文关键词为：', keyWords.join(','));
+	            callback(filter(getSimilarArticles(data.tfList).concat(articleList)));
+	          });
+	        }, delayTime);
+	        break;
+	      case m_article.hasCatalog(key):
+	        setTimeout(function () {
+	          m_article.getListByCatalog(key, 0, 999).then(function (data) {
+	            //在目录列表中已经有当前目录文章的展示了，在这里优先展示搜索到的内容
+	            var catalog = m_article.getCatalogMessage(key);
+	            var alist = data.list || [];
+	            m_article.searchList(catalog.tagList.join(' '), function (list) {
+	              callback(filter(list.concat(alist.concat(articleList))));
+	            }, true);
+	          });
+	        }, delayTime);
+	        break;
+	
+	      default:
+	        callback(getMutiSamples());
+	        break;
+	
+	    }
+	  })();
+	};
+	module.exports = {
+	  getRecommend: getRecommend
+	};
+
+/***/ },
+/* 16 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1258,27 +1531,18 @@
 	  localStorage.setItem(storageKey, JSON.stringify(readHistory));
 	};
 	
-	var getRecommend = function getRecommend() {
-	  var list = [];
-	  var currentPath = decodeURIComponent(location.hash.replace('#!/', ''));
-	  var articleList = m_article.getArticleList();
-	  articleList.some(function (o) {
-	    if (!readHistory[o.path] && o.path != currentPath) {
-	      list.push(o);
-	      if (list.length > 10) {
-	        return true;
-	      }
-	    }
-	  });
-	  return list;
-	};
 	module.exports = {
 	  addHistory: addHistory,
-	  getRecommend: getRecommend
+	  hasRead: function hasRead(path) {
+	    return !!readHistory[path];
+	  },
+	  getReadTime: function getReadTime(path) {
+	    return readHistory[path];
+	  }
 	};
 
 /***/ },
-/* 16 */
+/* 17 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1292,14 +1556,14 @@
 	};
 
 /***/ },
-/* 17 */
+/* 18 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	var s_mainContainer = __webpack_require__(18);
+	var s_mainContainer = __webpack_require__(19);
 	var m_article = __webpack_require__(4);
-	var c_articleList = __webpack_require__(16);
+	var c_articleList = __webpack_require__(17);
 	
 	module.exports = function (page, key) {
 	  page.html(s_mainContainer);
@@ -1367,7 +1631,7 @@
 	};
 
 /***/ },
-/* 18 */
+/* 19 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -1375,7 +1639,7 @@
 	module.exports = '  <div class="row">' + '    <div class="slidebar col-sm-5 col-md-4 col-lg-3" data-selector="slidebar"></div>' + '    <div class="col-sm-offset-5 col-md-offset-4 col-lg-offset-3 col-sm-7 col-md-8 col-lg-9" data-selector="main"></div>' + '  </div>';
 
 /***/ },
-/* 19 */
+/* 20 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1385,9 +1649,9 @@
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
 	var m_article = __webpack_require__(4);
-	var m_readHistory = __webpack_require__(15);
+	var m_readHistory = __webpack_require__(16);
 	var c_pannelList = __webpack_require__(14);
-	var c_content = __webpack_require__(20);
+	var c_content = __webpack_require__(21);
 	var m_initOption = __webpack_require__(12);
 	
 	module.exports = function (page, key) {
@@ -1420,7 +1684,7 @@
 	};
 
 /***/ },
-/* 20 */
+/* 21 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1435,7 +1699,7 @@
 	};
 
 /***/ },
-/* 21 */
+/* 22 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1474,7 +1738,7 @@
 	};
 
 /***/ },
-/* 22 */
+/* 23 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1483,7 +1747,7 @@
 	var c_mainContainer = __webpack_require__(11);
 	var m_initOption = __webpack_require__(12);
 	var c_pannelList = __webpack_require__(14);
-	var m_pullArticle = __webpack_require__(23);
+	var m_pullArticle = __webpack_require__(24);
 	
 	module.exports = function (page, key) {
 	  var viewBody = c_mainContainer();
@@ -1513,7 +1777,7 @@
 	};
 
 /***/ },
-/* 23 */
+/* 24 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';

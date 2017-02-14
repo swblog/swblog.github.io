@@ -1,6 +1,6 @@
 const gulp = require('gulp');
 const less = require('gulp-less');
-const cssmin = require('gulp-minify-css');
+const cssClean = require('gulp-clean-css');
 const open = require('gulp-open');
 const plumber = require('gulp-plumber');
 const fs = require('fs');
@@ -26,7 +26,7 @@ gulp.task('less', function () {
   return gulp.src('./source/less/custom.bootstrap.less')
   .pipe(less({
     paths: [ path.join(__dirname, 'less', 'includes') ]
-  })).pipe(cssmin())
+  })).pipe(cssClean())
   .pipe(gulp.dest('./source/lib/bootstrap-custom/css'));
 });
 

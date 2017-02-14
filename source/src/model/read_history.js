@@ -18,21 +18,9 @@ const addHistory = (path)=>{
   localStorage.setItem(storageKey, JSON.stringify(readHistory));
 };
 
-const getRecommend = ()=>{
-  let list = [];
-  let currentPath = decodeURIComponent(location.hash.replace('#!/', ''));
-  let articleList = m_article.getArticleList();
-  articleList.some(function(o){
-    if(!readHistory[o.path] && o.path!=currentPath){
-      list.push(o);
-      if(list.length > 10){
-        return true;
-      }
-    }
-  });
-  return list;
-};
+
 module.exports = {
   addHistory,
-  getRecommend
+  hasRead: (path)=> !!readHistory[path],
+  getReadTime: (path)=> readHistory[path]
 };

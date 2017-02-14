@@ -1,5 +1,5 @@
 const m_article = require('model/article');
-const m_readHistory = require('model/read_history');
+const m_recommend = require('helper/recommend');
 const c_pannel = require('card/blog/pannel');
 module.exports = (view) => {
   let viewPannelBook = c_pannel({
@@ -34,16 +34,19 @@ module.exports = (view) => {
   });
 
   let viewPannelRecommendPost = c_pannel({
-    data: {
+    delay: true
+  });
+  m_recommend.getRecommend(function(list){
+    viewPannelRecommendPost.reset({
       title: '推荐阅读',
-      list: m_readHistory.getRecommend().map(o => {
+      list: list.map(o => {
         return {
           href: o.href,
           title: o.title,
           time: o.time
         }
       })
-    }
+    });
   });
 
   return view.setView({

@@ -1,6 +1,6 @@
 {
   "private": true,
-  "description": "基于Service worker与单页面应用架构的博客系统",
+  "description": "swblog博客系统网页",
   "name": "swblog.github.io",
   "dependencies": {
     "gulp": "^3.9.1",
@@ -19,8 +19,8 @@
     "babel-preset-es2015": "^6.22.0",
     "css-loader": "^0.26.1",
     "gulp": "^3.9.1",
+    "gulp-clean-css": "^3.0.2",
     "gulp-less": "^3.3.0",
-    "gulp-minify-css": "^1.2.4",
     "gulp-open": "^2.0.0",
     "gulp-plumber": "^1.1.0",
     "simple-git": "^1.65.0",
@@ -28,7 +28,7 @@
     "webpack": "^1.14.0",
     "webpack-stream": "^3.2.0"
   },
-  "version": "0.0.1",
+  "version": "0.0.2",
   "scripts": {
     "start": "gulp watch",
     "update": "node server/update-index.js",

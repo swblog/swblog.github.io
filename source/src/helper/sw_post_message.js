@@ -8,8 +8,9 @@ if (navigator.serviceWorker) {
   navigator.serviceWorker.addEventListener('message', function(event) {
     let {cbid, resp} = event.data;
     if(cbid && callbackDict[cbid]){
-      callbackDict[cbid](resp);
-      delete callbackDict[cbid];
+      if(!callbackDict[cbid](resp)){
+        delete callbackDict[cbid];
+      }
     }
   }); //页面通过监听service worker的message事件接收service worker的信息
   postMessage = function(req, callback){
