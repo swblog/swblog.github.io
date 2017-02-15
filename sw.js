@@ -77,23 +77,35 @@ var getNoSearch = function(url){
 var addToCache = function (dbName, req, response) {
 
   return fetch(req.clone()).then(function (resp) {
-    if (resp.type !== 'basic' && resp.type !== 'cors') {
-      return resp;
-    }
-    if (resp.status !== 200) {
+    //basic 同域 !== 'basic' && resp.type !== 'cors'
+    if (resp.status !== 200 || resp.type =='error') {
       throw new Error('response status is ' + resp.status);
     }
+    var contentType = resp.headers.get('content-type');
+    if(contentType.indexOf('text/html') > -1){
+      //避免缓存了上网时需要先登录的页面
+      var arr = req.url.match(/\.[a-z]+$/);
+      if(arr){
+        var ext = arr[0].substr(1);
+        if(ext!='html'){
+          throw new Error('response content-type is ' + contentType);
+        }
+      }
+    }
+
     var cacheResp = resp.clone();
-    if(dbName===imageCacheName && !/^image\//.test(resp.headers.get('content-type'))){
+    if(dbName===imageCacheName && !/^image\//.test(contentType)){
       return resp;
     }
     caches.open(dbName).then(function (cache) {
       //删除旧文件
-      let urlKey = getNoSearch(req.url);
       cache.keys().then(function (oldReqList) {
-        oldReqList.filter(oldReq => oldReq.url.indexOf(urlKey) > -1).forEach(function (oldReq) {
-          cache.delete(oldReq);
-        });
+        if(req.url.indexOf('?') > 0){
+          let urlKey = getNoSearch(req.url) + '?';
+          oldReqList.filter(oldReq => oldReq.url.indexOf(urlKey) > -1).forEach(function (oldReq) {
+            cache.delete(oldReq);
+          });
+        }
         //添加新文件
         cache.put(req.clone(), cacheResp);
       });
