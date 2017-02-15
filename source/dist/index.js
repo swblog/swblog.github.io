@@ -378,10 +378,12 @@
 	};
 	
 	var preload = function preload(obj) {
+	  var count = 0;
 	  for (var pathWithSearch in obj) {
 	    var path = getPath(pathWithSearch);
 	    var item = void 0;
 	    if (item = articleDict[path]) {
+	      count++;
 	      item.content = obj[pathWithSearch];
 	      item.tfList = m_search.getTFs(item.content);
 	      item.summary = getSortContent(obj[pathWithSearch]);
@@ -397,12 +399,17 @@
 	    m: 'delete_not_exist_article',
 	    dict: existDict
 	  });
+	
 	  if (isPreload) {
-	    console.log('文章同步成功！可以离线使用');
+	    if (count) {
+	      console.log('文章同步成功（' + count + '篇）！可以离线使用');
+	    } else {
+	      console.log('文章同步成功!（无更新内容）');
+	    }
 	    return false;
 	  } else {
 	    isPreload = true;
-	    console.log('本地文章加载成功');
+	    console.log('本地文章加载成功（' + count + '/' + (articleList.length + sidebarList.length) + '个文件）');
 	  }
 	  return true;
 	};

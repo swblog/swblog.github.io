@@ -230,6 +230,9 @@ var getTexts = function(dict){
 var preloadList = function (urlList) {
   let retDict = {};
   return new Promise(function (resolve) {
+    if(urlList.length===0){
+      return setTimeout(()=>resolve(regDict), 300);
+    }
     iterator(urlList, function (url, next, list) {
       let myRequest = new Request(url);
       for (var dbName in regDict) {
