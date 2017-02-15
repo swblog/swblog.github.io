@@ -129,7 +129,7 @@ const preload = (obj) => {
     let item;
     if (item = articleDict[path]) {
       item.content = obj[pathWithSearch];
-      item.tfList = m_search.getKeyWords(item.content);
+      item.tfList = m_search.getTFs(item.content);
       item.summary = getSortContent(obj[pathWithSearch]);
     }
   }
@@ -249,7 +249,7 @@ const fetchContent = (list) => {
     success(str) {
       let item = Object.assign({}, o);
       item.content = str;
-      item.tfList = m_search.getKeyWords(str);
+      item.tfList = m_search.getTFs(str);
       item.summary = getSortContent(str);
       articleDict[o.path] = item;
     }
@@ -356,12 +356,23 @@ const searchList = (word, callback, isCommend=false) => {
   let ajaxList = [];
   let totalList = articleList.filter(o=>o);
 
-  const searchCallback = (list) => callback({
-    totalNum: totalList.length,
-    checkNum: list.length,
-    searchWord: word,
-    list: list.filter(o => o.testType > 0).sort((a,b)=>b.searchWeight-a.searchWeight)
-  });
+  const searchCallback = (list) => {
+    let resultList = list.filter(o => o.testType > 0).sort((a,b)=>b.searchWeight-a.searchWeight);
+    if(resultList.length){
+      console.table(resultList.map(o=>{
+        return {
+          path: o.path,
+          searchWeight: o.searchWeight
+        };
+      }));
+      callback({
+        totalNum: totalList.length,
+        checkNum: list.length,
+        searchWord: word,
+        list: resultList
+      });
+    }
+  };
   const batchProcess = (list, next) => {
     let subList = list.splice(0, 10);
     fetchContent(subList).then(() => {

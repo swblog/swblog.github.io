@@ -44,13 +44,14 @@ const getWordList = (str = '') => {
 };
 
 const removeStopWord = (str) => {
-  str = str.replace(/<[^\u4e00-\u9fff\uf900-\ufaff>]+>|\([^\u4e00-\u9fff\uf900-\ufaff)]+\)|\w+[:@][\w.?#=&\/]+/g, ' ');
-  str = str.replace(/怎么|的|是|开始|很多|我|觉得|非常|可以|一|了|上面|下面|这|那|哪|个|this|return|with/g, ' ');
+  str = str.replace(/\s*```([^`\n\r]*)[^`]*```\s*/g, function($0, $1){return ' '+$1+' ';}); //去掉代码
+  str = str.replace(/<[^\u4e00-\u9fff\uf900-\ufaff>]+>|\([^\u4e00-\u9fff\uf900-\ufaff)]+\)|\w+[:@][\w.?#=&\/]+/g, ' ');//去掉html标签及超链接
+  str = str.replace(/怎么|的|是|开始|很多|我|觉得|非常|可以|一|了|上面|下面|这|那|哪|个|this|return|with/g, ' '); //去停用词
   str = str.replace(/[^\u4e00-\u9fff\uf900-\ufaff\w]/g, ' '); //非中文或英文，替换成空格
   return str;
 }
 
-const getKeyWords = (str = '') => {
+const getTFs = (str = '') => {
   let wordList = getWordList(removeStopWord(str)).slice(1);
   let threeDict = {};
   let fourDict = {};
@@ -109,7 +110,7 @@ const getKeyWords = (str = '') => {
 
 module.exports = {
   getWordList,
-  getKeyWords,
+  getTFs,
   getGlobalRegex: (str) => {
     let wordSet = new Set(getWordList(str));
     let wordList = [...wordSet];

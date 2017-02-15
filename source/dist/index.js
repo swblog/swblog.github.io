@@ -383,7 +383,7 @@
 	    var item = void 0;
 	    if (item = articleDict[path]) {
 	      item.content = obj[pathWithSearch];
-	      item.tfList = m_search.getKeyWords(item.content);
+	      item.tfList = m_search.getTFs(item.content);
 	      item.summary = getSortContent(obj[pathWithSearch]);
 	    }
 	  }
@@ -513,7 +513,7 @@
 	      success: function success(str) {
 	        var item = Object.assign({}, o);
 	        item.content = str;
-	        item.tfList = m_search.getKeyWords(str);
+	        item.tfList = m_search.getTFs(str);
 	        item.summary = getSortContent(str);
 	        articleDict[o.path] = item;
 	      }
@@ -657,16 +657,25 @@
 	  });
 	
 	  var searchCallback = function searchCallback(list) {
-	    return callback({
-	      totalNum: totalList.length,
-	      checkNum: list.length,
-	      searchWord: word,
-	      list: list.filter(function (o) {
-	        return o.testType > 0;
-	      }).sort(function (a, b) {
-	        return b.searchWeight - a.searchWeight;
-	      })
+	    var resultList = list.filter(function (o) {
+	      return o.testType > 0;
+	    }).sort(function (a, b) {
+	      return b.searchWeight - a.searchWeight;
 	    });
+	    if (resultList.length) {
+	      console.table(resultList.map(function (o) {
+	        return {
+	          path: o.path,
+	          searchWeight: o.searchWeight
+	        };
+	      }));
+	      callback({
+	        totalNum: totalList.length,
+	        checkNum: list.length,
+	        searchWord: word,
+	        list: resultList
+	      });
+	    }
 	  };
 	  var batchProcess = function batchProcess(list, next) {
 	    var subList = list.splice(0, 10);
@@ -832,13 +841,16 @@
 	};
 	
 	var removeStopWord = function removeStopWord(str) {
-	  str = str.replace(/<[^\u4e00-\u9fff\uf900-\ufaff>]+>|\([^\u4e00-\u9fff\uf900-\ufaff)]+\)|\w+[:@][\w.?#=&\/]+/g, ' ');
-	  str = str.replace(/怎么|的|是|开始|很多|我|觉得|非常|可以|一|了|上面|下面|这|那|哪|个|this|return|with/g, ' ');
+	  str = str.replace(/\s*```([^`\n\r]*)[^`]*```\s*/g, function ($0, $1) {
+	    return ' ' + $1 + ' ';
+	  }); //去掉代码
+	  str = str.replace(/<[^\u4e00-\u9fff\uf900-\ufaff>]+>|\([^\u4e00-\u9fff\uf900-\ufaff)]+\)|\w+[:@][\w.?#=&\/]+/g, ' '); //去掉html标签及超链接
+	  str = str.replace(/怎么|的|是|开始|很多|我|觉得|非常|可以|一|了|上面|下面|这|那|哪|个|this|return|with/g, ' '); //去停用词
 	  str = str.replace(/[^\u4e00-\u9fff\uf900-\ufaff\w]/g, ' '); //非中文或英文，替换成空格
 	  return str;
 	};
 	
-	var getKeyWords = function getKeyWords() {
+	var getTFs = function getTFs() {
 	  var str = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '';
 	
 	  var wordList = getWordList(removeStopWord(str)).slice(1);
@@ -911,7 +923,7 @@
 	
 	module.exports = {
 	  getWordList: getWordList,
-	  getKeyWords: getKeyWords,
+	  getTFs: getTFs,
 	  getGlobalRegex: function getGlobalRegex(str) {
 	    var wordSet = new Set(getWordList(str));
 	    var wordList = [].concat(_toConsumableArray(wordSet));
@@ -1408,7 +1420,10 @@
 	    return b.weight - a.weight;
 	  });
 	  console.table(weightList.slice(0, 20).map(function (o) {
-	    return { title: o.article.title, weight: o.weight };
+	    return {
+	      title: o.article.title,
+	      weight: o.weight
+	    };
 	  }));
 	  return weightList.map(function (o) {
 	    return o.article;
@@ -1418,7 +1433,8 @@
 	var getMutiSamples = function getMutiSamples() {
 	  var tagDict = {};
 	  var retList = [];
-	  var list = m_article.getArticleList().filter(function (o) {
+	  var originList = m_article.getArticleList();
+	  var list = originList.filter(function (o) {
 	    return !m_readHistory.hasRead(o.path);
 	  });
 	  if (list.some(function (o) {
@@ -1437,25 +1453,25 @@
 	    return retList;
 	  } else {
 	    var tagList = Object.keys(tagDict);
-	    outer: for (var i = 0; i < 10; i++) {
+	    for (var i = 0; i < 10; i++) {
 	      for (var j = 0; j < tagList.length; j++) {
 	        var item = void 0;
 	        var tagName = tagList[j];
 	        if (item = tagDict[tagName][i]) {
 	          retList.push(item);
 	          if (retList.length == 10) {
-	            break outer;
+	            return retList;
 	          }
 	        }
 	      }
-	      return retList;
 	    }
 	  }
+	  return retList.concat(originList.slice(0, 10 - retList.length));
 	};
 	
 	var getRecommend = function getRecommend(callback) {
 	  var key = decodeURIComponent(BCD.getHash(0));
-	  var articleList = m_article.getArticleList();
+	  var articleList = getMutiSamples();
 	  var delayTime = 2E3 - (Date.now() - m_article.startTime);
 	  delayTime = m_article.isPreload ? 0 : delayTime < 0 ? 0 : delayTime;
 	
@@ -1495,7 +1511,7 @@
 	        break;
 	
 	      default:
-	        callback(getMutiSamples());
+	        callback(articleList);
 	        break;
 	
 	    }
