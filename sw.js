@@ -77,8 +77,11 @@ var getNoSearch = function(url){
 var addToCache = function (dbName, req, response) {
 
   return fetch(req.clone()).then(function (resp) {
-    //basic 同域 !== 'basic' && resp.type !== 'cors'
-    if (resp.status !== 200 || resp.type =='error') {
+    if(resp.type !== 'basic' && resp.type !== 'cors'){
+        return resp;
+    }
+
+    if (resp.status !== 200) {
       throw new Error('response status is ' + resp.status);
     }
     var contentType = resp.headers.get('content-type');
