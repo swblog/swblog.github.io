@@ -669,7 +669,7 @@
 	    }).sort(function (a, b) {
 	      return b.searchWeight - a.searchWeight;
 	    });
-	    if (resultList.length) {
+	    if (resultList.length || list.length >= totalList.length) {
 	      console.table(resultList.map(function (o) {
 	        return {
 	          path: o.path,

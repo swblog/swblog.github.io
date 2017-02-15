@@ -366,7 +366,7 @@ const searchList = (word, callback, isCommend=false) => {
 
   const searchCallback = (list) => {
     let resultList = list.filter(o => o.testType > 0).sort((a,b)=>b.searchWeight-a.searchWeight);
-    if(resultList.length){
+    if(resultList.length || list.length>=totalList.length){
       console.table(resultList.map(o=>{
         return {
           path: o.path,
