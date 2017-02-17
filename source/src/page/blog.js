@@ -2,6 +2,7 @@
 
 const c_mainContainer = require('card/common/main_container');
 const c_footer = require('card/common/footer');
+const m_config = require('model/config');
 const m_article = require('model/article');
 const m_initOption = require('helper/init_option');
 
@@ -27,6 +28,8 @@ module.exports = function(page) {
           document.title = data.title;
           viewBody.reset(data);
         });
+      }else{
+        BCD.replaceHash(m_config.getIndex());
       }
     },
     viewList: [viewBody, viewFoot]

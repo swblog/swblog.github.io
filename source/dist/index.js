@@ -625,21 +625,22 @@
 	          point: point,
 	          weight: weight
 	        });
-	        return '<span class="text-danger">' + $0 + '</span>';
+	        return '<font color=#a94442>' + $0 + '</font>';
 	      });
 	      pointList = pointList.sort(function (a, b) {
 	        return b.weight - a.weight;
 	      });
-	      var start = pointList[0].point - 20;
+	      var startPoint = pointList[0].point;
+	      var start = startPoint - 30;
 	      var summary = item.content.substr(start < 0 ? 0 : start);
 	      start = summary.search(/[。\n\r]/);
-	      if (start < 20) {
+	      if (start < startPoint) {
 	        summary = getSortContent(summary.substr(start).replace(/^[。\s]*/, ''), 5);
 	      } else {
-	        summary = getSortContent(summary.substr(10).replace(/^[。\s]*/, ''), 5);
+	        summary = getSortContent(summary.replace(/^[。\s]*/, ''), 5);
 	      }
 	      obj.summary = summary.replace(reg, function ($0) {
-	        return '<span class="text-danger">' + $0 + '</span>';
+	        return '<font color=#a94442>' + $0 + '</font>';
 	      });
 	      testType += 2;
 	    })();
@@ -676,13 +677,13 @@
 	          searchWeight: o.searchWeight
 	        };
 	      }));
-	      callback({
-	        totalNum: totalList.length,
-	        checkNum: list.length,
-	        searchWord: word,
-	        list: resultList
-	      });
 	    }
+	    callback({
+	      totalNum: totalList.length,
+	      checkNum: list.length,
+	      searchWord: word,
+	      list: resultList
+	    });
 	  };
 	  var batchProcess = function batchProcess(list, next) {
 	    var subList = list.splice(0, 10);
@@ -1731,6 +1732,7 @@
 	
 	var c_mainContainer = __webpack_require__(11);
 	var c_footer = __webpack_require__(10);
+	var m_config = __webpack_require__(7);
 	var m_article = __webpack_require__(4);
 	var m_initOption = __webpack_require__(12);
 	
@@ -1754,6 +1756,8 @@
 	          document.title = data.title;
 	          viewBody.reset(data);
 	        });
+	      } else {
+	        BCD.replaceHash(m_config.getIndex());
 	      }
 	    },
 	    viewList: [viewBody, viewFoot]
