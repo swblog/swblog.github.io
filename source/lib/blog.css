@@ -43,6 +43,7 @@ a.logo-link {
 [data-url]{
   cursor: pointer;
 }
+
 .slidebar{
 	overflow-y: scroll;
   top: 55px;
@@ -53,6 +54,16 @@ a.logo-link {
   border-right-color:rgb(187, 187, 187);
   border-right-style:solid;
   border-right-width:0.952381px;
+}
+.slidebar .icon{
+  float: right;color: #1b901b;font-size: xx-small;margin-top: 8px;
+}
+
+.slidebar .active{
+  padding: 0 10px;
+  margin: 0 -10px;
+  border-radius: 60px;
+  background-color: #f5f587;
 }
 
 @media (max-width: 768px) {

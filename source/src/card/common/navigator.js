@@ -12,9 +12,10 @@ BCD.addEvent('navigator_search', function(ele){
   let viewInput = ele.find('input');
   let viewDrop = ele.find('ul').setView({
     template:'<%(obj||[]).forEach(function(o){%>'+
-    '<li><a data-on="?m=go" data-url="<%=o.href%>"><%=o.title%></a></li>'+
+    '<li data-on="?m=go" data-url="<%=o.href%>"><a><%=o.title%></a></li>'+ //
     '<%})%>'
   });
+
   let viewGroup = ele.find('.form-group');
   const getWord = ()=> viewInput.val().trim();
   const doSearch = ()=>{
@@ -36,19 +37,41 @@ BCD.addEvent('navigator_search', function(ele){
     }
   });
   let selectLi = null;
+  let selectList = null;
   let index = -1;
   let oldWord = '';
   viewInput.on('blur', function(){
-    viewDrop.hide();
+    setTimeout(function(){
+      viewDrop.hide();
+    }, 200);
   });
+  ele.on('keydown', function(e){//上下选择
+    if(selectList &&(e.keyCode==40 || e.keyCode==38)){
+
+      if(e.keyCode==40){
+        index++;
+        if(index >= selectList.length){
+          index = 0;
+        }
+      }
+      if(e.keyCode==38){
+        index--;
+        if(index <= -selectList.length){
+          index = 0;
+        }
+      }
+      selectList.css('background-color','');
+      selectLi = selectList.eq(index);
+      selectLi.css('background-color','#b2d8fa');
+    }
+  });
+
   ele.on('keyup', function(e){ //keypress要慢一拍 keypress input keyup
-    //console.log(e);
     let word = getWord();
     if(word){
       if(e.keyCode==32){
         return doSearch();
       }
-      let lis = viewDrop.find('a');
       if(e.keyCode==13){
         if(selectLi){
           selectLi.trigger('click');
@@ -56,37 +79,21 @@ BCD.addEvent('navigator_search', function(ele){
           doSearch();
         }
       }
-      if(e.keyCode==40){
-        index++;
-        if(index >= lis.length){
-          index = 0;
-        }
-      }
-      if(e.keyCode==38){
-        index--;
-        if(index <= -lis.length){
-          index = 0;
-        }
-      }
 
-      if(word==oldWord){ //上下选择
-        if(e.keyCode==40 || e.keyCode==38){
-          lis.css('background-color','');
-          selectLi = lis.eq(index);
-          selectLi.css('background-color','aliceblue');
-        }
-
-        return;
+      if(word==oldWord){
+        return viewDrop.show();
       }
       oldWord = word;
       let list = m_article.searchDirect(word);
       if(list.length){
         index = -1;
         selectLi = null;
-        return viewDrop.reset(list);
+        viewDrop.reset(list);
+        selectList = viewDrop.find('li');
       }
+    }else{
+      viewDrop.hide();
     }
-    viewDrop.hide();
   });
 })
 

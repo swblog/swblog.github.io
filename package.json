@@ -32,6 +32,7 @@
   "scripts": {
     "start": "gulp watch",
     "update": "node server/update-index.js",
-    "reset": "node server/reset_mtime.js"
+    "reset": "node server/reset_mtime.js",
+    "clean": "node server/clean_not_ok.js"
   }
 }

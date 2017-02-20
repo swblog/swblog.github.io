@@ -60,11 +60,12 @@ BCD.addEvent('mkview', function (ele, option, data) {
           return $0
         }));
     }
+    $('a[href^="http"]').attr('target', '_blank');
   }, 0);
 });
 
 const getName = (path) => {
-  let arr = path.match(/([^/.]+)[.\w]+$/);
+  let arr = path.match(/\/([^/.]+)[.\w-_]+$/);
   return arr ? arr[1] : '';
 }
 
@@ -122,6 +123,52 @@ const getSortContent = (content, paragraph = 10) => {
   return ret;
 }
 
+const processItem = (item, content)=>{
+  if(item.title==sidebarName){
+    item.content = content;
+    return item;
+  }
+  let isRaw = true;
+  // let start = content.indexOf('---');
+  // if(start>-1){
+  //   let end;
+  //   if(start===0){
+  //     start = start+3;
+  //     end = content.substring(start).indexOf('---') + start;
+  //   }else{
+  //     end = start;
+  //     start = 0;
+  //   }
+  //   let arr = content.substring(start, end).match(/([^:\n]+:[^\n]+)/g);
+  //   if(arr){
+  //     let attrDict = {};
+  //     arr.forEach(function(o){
+  //       let point = o.indexOf(':');
+  //       attrDict[o.substring(0, point)] = o.substring(point+1);
+  //     });
+  //     item.title = attrDict.title || item.title;
+  //     isRaw = false;
+  //     content = content.substring(end+3).trim();
+  //     if(attrDict.dest_url){
+  //       content = '链接：['+attrDict.dest_url+']('+attrDict.dest_url+')'
+  //     }
+  //   }
+  // }
+  if(isRaw){
+    let arr = content.match(/^[\s]*#[^\n]+[\s]*/);
+    if(arr){
+     let title = arr[0];
+     item.title = title.replace(/[#\s]+/, '').trim();
+     content = content.replace(title, '');
+     isRaw = false;
+    }
+  }
+
+  item.content = content = (content || '').replace(/^[\s]*---[-]*/, '');
+  item.tfList = m_search.getTFs(content);
+  item.summary = getSortContent(content);
+  return item;
+};
 
 const preload = (obj) => {
   let count = 0;
@@ -130,9 +177,7 @@ const preload = (obj) => {
     let item;
     if (item = articleDict[path]) {
       count++;
-      item.content = obj[pathWithSearch];
-      item.tfList = m_search.getTFs(item.content);
-      item.summary = getSortContent(obj[pathWithSearch]);
+      processItem(item, obj[pathWithSearch]);
     }
   }
   let totalList = sidebarList.concat(articleList);
@@ -194,7 +239,7 @@ const init = (list) => {
         tagList: tags
       };
       if (articleDict[path]) {
-        $.extend(articleDict[path], item);
+        item = $.extend(articleDict[path], item);
       } else {
         articleDict[path] = item;
       }
@@ -255,11 +300,7 @@ const fetchContent = (list) => {
   let ajaxList = list.filter(o => articleDict[o.path] && !articleDict[o.path].content).map(o => $.ajax({
     url: getURL(o),
     success(str) {
-      let item = Object.assign({}, o);
-      item.content = str;
-      item.tfList = m_search.getTFs(str);
-      item.summary = getSortContent(str);
-      articleDict[o.path] = item;
+      articleDict[o.path] = processItem(o, str);
     }
   }));
   return new Promise(function (resolve) {
@@ -309,23 +350,31 @@ const testItem = (reg, item) => {
   let testType = 0;
   let obj = {};
   let searchWeight = 0;
-  let weightDict = {};
+  let titleMatchDict = {};
+  let contentMatchDict = {};
   if (reg.test(item.title)) {
     obj.title = item.title.replace(reg, function ($0) {
-      if (!weightDict[$0]) {
-        weightDict[$0] = 2;
+      if (titleMatchDict[$0]) {
+        titleMatchDict[$0] ++;
+      }else{
+        titleMatchDict[$0] = 1;
       }
       return '<span class="text-danger">' + $0 + '</span>';
     });
     testType += 1;
+    let titleMathLength = 0;
+    for (var key in titleMatchDict) {
+      titleMathLength += /\w/.test(key) ? titleMatchDict[key] : Math.pow(1.6, key.length-1) * titleMatchDict[key];
+    }
+    searchWeight += titleMathLength / item.title.length;
   }
   if (item.content && reg.test(item.content)) {
     let pointList = [];
     obj.content = item.content.replace(reg, function ($0, point) {
-      if (!weightDict[$0]) {
-        weightDict[$0] = 1;
-      } else if (weightDict[$0] == 2) {
-        weightDict[$0]++;
+      if (contentMatchDict[$0]) {
+        contentMatchDict[$0]++;
+      } else{
+        contentMatchDict[$0] = 1;
       }
       let weight = /\w/.test($0) ? 2 : $0.length;
       pointList.push({
@@ -348,11 +397,16 @@ const testItem = (reg, item) => {
       return '<font color=#a94442>' + $0 + '</font>';
     });
     testType += 2;
+    let contentMathLength = 0;
+
+    for (var key in contentMatchDict) {
+      contentMathLength += /\w/.test(key) ? contentMatchDict[key] : Math.pow(1.6, key.length-1) * contentMatchDict[key];
+    }
+    searchWeight += contentMathLength / Math.pow(item.content.length, 0.6);
   }
   obj.testType = testType;
-  for (var key in weightDict) {
-    searchWeight += /\w/.test(key) ? weightDict[key] : key.length * weightDict[key];
-  }
+/*******calculate search weight**********/
+
   obj.searchWeight = searchWeight;
   return Object.assign({}, item, obj);
 };
@@ -366,7 +420,13 @@ const searchList = (word, callback, isCommend = false) => {
   let totalList = articleList.filter(o => o);
 
   const searchCallback = (list) => {
-    let resultList = list.filter(o => o.testType > 0).sort((a, b) => b.searchWeight - a.searchWeight);
+    let resultList = list.filter(o => o.testType > 0).sort((a, b) => {
+      let ret = b.searchWeight - a.searchWeight;
+      if(ret===0){
+        return b.content.length - a.content.length + (b.mtime - a.mtime) / 1E5;
+      }
+      return ret;
+    });
     if (resultList.length || list.length >= totalList.length) {
       console.table(resultList.map(o => {
         return {
@@ -422,13 +482,17 @@ const searchList = (word, callback, isCommend = false) => {
 const searchDirect = (word) => {
   let reg = m_search.getGlobalRegex(word);
   return articleList.filter(o => reg.test(o.title)).map(o => {
-    return {
+    let weight = 0;
+    let item = {
       href: o.href,
       title: o.title.replace(reg, function ($0) {
+        weight += $0.length;
         return '<span class="text-danger">' + $0 + '</span>';
       })
     };
-  })
+    item.weight = weight
+    return item;
+  }).sort((a, b)=>b.weight - a.weight);
 };
 
 

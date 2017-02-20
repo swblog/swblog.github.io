@@ -12,7 +12,7 @@ module.exports = function (option) {
       '       data-url="#!/<%=encodeURIComponent(["blog"].concat(arr.slice(0, i+1)).join("/"))%>"><%=item%></a><%})%>' +
       '    </div>' +
       '    <div class="group2 col-sm-6 col-md-6">' +
-      '      &nbsp;&nbsp;<span class="glyphicon glyphicon-time"></span><%-obj.time%>' +
+      '      <span class="glyphicon glyphicon-time"></span>&nbsp;<%-obj.time%>' +
       '    </div>' +
       '  </div>' +
       '  <hr>' +
